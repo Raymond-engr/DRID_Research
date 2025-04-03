@@ -6,7 +6,8 @@ import path from 'path';
 
 const router = express.Router();
 
-const strictLimit = rateLimiter(5, 15 * 60 * 1000);
+const strictLimit = rateLimiter(5, 15 * 60 * 1000); // 5 requests per 15 minutes
+const standardLimit = rateLimiter(15, 15 * 60 * 1000); // 15 requests per 15 minutes
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -34,6 +35,11 @@ const upload = multer({
 // Admin routes
 router.post('/admin/login', strictLimit, authController.adminLogin);
 router.post('/admin/invite', authenticateAdminToken, authController.inviteResearcher);
+
+// Researcher routes
+router.post('/researcher/login', standardLimit, authController.researcherLogin);
+
+// Common routes
 router.post('/refresh-token', authController.refreshToken);
 router.post('/logout', authController.logout);
 
