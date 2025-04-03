@@ -46,7 +46,14 @@ Faculty/Department
 Title (e.g., Lecturer, Professor, Dr, Engr)
 
 
-On submission, a user profile is created but without any special access (i.e., they cannot sign in).
+On submission, a user profile is created and an email containing the front-end url link leading to a login page, their email and a securely generated password is sent to the user via email. then they can sign in to see their published posts.
+
+The invite link section can be tweaked in a way that when they submit the information necessary for creating their user profile 
+An email is sent containing the frontend page link route to a sign in section for researchers then below the link the professor/lecturer email address is sent alongside a randomly generated password 
+
+They can use the email and password in the login page accessed through the front-end link to access their custom dashboard that shows their published work, comments and all
+
+With this feature, if they are signed in they can also reply to comments on their research articles
 
 
 Content Management:
@@ -410,16 +417,6 @@ Design the system to support scaling horizontally (especially the API endpoints 
 Extensibility:
 
 Design APIs to be extensible so that future features (e.g., detailed analytics dashboards, user account features) can be added with minimal disruption.
-
-
-I channged my mind concerning this I want this feature now:
-
-The invite link section can be tweaked in a way that when they submit the information necessary for creating their user profile 
-An email is sent containing the frontend page link route to a sign in section for researchers then below the link the professor/lecturer email address is sent alongside a randomly generated password 
-
-They can use the email and password in the login page accessed through the front-end link to access their custom dashboard that shows their published work, comments and all
-
-With this feature, if they are signed in they can also reply to comments on their research articles
 
 ---
 
