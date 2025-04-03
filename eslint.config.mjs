@@ -6,8 +6,10 @@ export default [
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: 'module',
-      ecmaFeatures: {
-        jsx: true,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
       },
     },
     ignores: ['node_modules/*', 'dist/*'],
