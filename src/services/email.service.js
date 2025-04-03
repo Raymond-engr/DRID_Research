@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { BadRequestError } from '../utils/customErrors';
+import { BadRequestError } from '../utils/customErrors.js';
 
 class EmailService {
   constructor() {

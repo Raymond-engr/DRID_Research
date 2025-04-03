@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import User from '../models/user.model.js';
+import User from '../model/user.model.js';
 import tokenService from '../services/token.service.js';
 import emailService from '../services/email.service.js';
 import { BadRequestError, UnauthorizedError } from '../utils/customErrors.js';

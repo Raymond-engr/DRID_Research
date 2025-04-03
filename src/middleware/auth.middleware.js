@@ -1,6 +1,6 @@
 import { UnauthorizedError, ForbiddenError } from '../utils/customErrors.js';
 import tokenService from '../services/token.service.js';
-import User from '../models/user.model.js';
+import User from '../model/user.model.js';
 
 // Authenticate admin access token
 const authenticateAdminToken = async (req, res, next) => {
