@@ -2,7 +2,7 @@
 
 import { useContext, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthContext, useAuth } from '@/lib/auth';
+import { AuthContext } from '@/lib/auth';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
