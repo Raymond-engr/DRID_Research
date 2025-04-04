@@ -105,8 +105,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// export const useAuth = useContext(AuthContext);
-
 // Auth protection hooks
 export function withAuth(Component) {
   return function AuthProtected(props) {
