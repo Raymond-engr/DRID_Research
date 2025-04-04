@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { authApi } from './api';
 import { getToken, removeToken } from './indexdb';
 
-const AuthContext = createContext({});
+export const AuthContext = createContext({
+  adminLogin: async () => {}
+});
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -37,6 +39,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const adminLogin = async (email, password) => {
+    console.log('jjj')
     setLoading(true);
     try {
       const data = await authApi.adminLogin(email, password);
@@ -102,7 +105,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+// export const useAuth = useContext(AuthContext);
 
 // Auth protection hooks
 export function withAuth(Component) {

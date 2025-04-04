@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth';
+import { AuthContext, useAuth } from '@/lib/auth';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,8 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { adminLogin } = useAuth();
+  const {adminLogin} = useContext(AuthContext);
+  // const { adminLogin } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -24,6 +25,7 @@ export default function AdminLoginPage() {
 
     try {
       const success = await adminLogin(email, password);
+      console.log(adminLogin)
       if (success) {
         router.push('/admin');
       } else {
