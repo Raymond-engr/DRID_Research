@@ -14,6 +14,7 @@ export default function ResearcherRegisterPage({ params }) {
   const { token } = params;
   const [name, setName] = useState('');
   const [faculty, setFaculty] = useState('');
+  const [bio, setBio] = useState('');
   const [title, setTitle] = useState('');
   const [profilePicture, setProfilePicture] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -39,6 +40,7 @@ export default function ResearcherRegisterPage({ params }) {
       const formData = new FormData();
       formData.append('name', name);
       formData.append('faculty', faculty);
+      formData.append('bio', bio);
       formData.append('title', title);
       if (profilePicture) {
         formData.append('profilePicture', profilePicture);
@@ -118,6 +120,18 @@ export default function ResearcherRegisterPage({ params }) {
                 id="faculty"
                 value={faculty}
                 onChange={(e) => setFaculty(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="bio" className="text-sm font-medium">
+              Bio (Interests and areas of expertise)
+              </label>
+              <Input
+                id="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
                 required
               />
             </div>
