@@ -30,12 +30,16 @@ export const AuthProvider = ({ children }) => {
         
         const payload = JSON.parse(atob(token.split('.')[1]));
 
+        console.log("Parsing payload")
+
         setUser({
           isAuthenticated: true,
           id: payload.userId,    
           email: payload.email,  
           role: payload.role 
         });
+
+        console.log("User after checkAuth:", user);
 
         setLoading(false);
       } catch (error) {
@@ -46,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     checkAuth();
-  }, []);
+  }, [user]);
 
   const adminLogin = async (email, password) => {
     setLoading(true);
@@ -57,6 +61,13 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: true,
         role: 'admin',
       });
+
+      console.log("User after login:", {
+        ...data.user,
+        isAuthenticated: true,
+        role: 'admin',
+      });
+
       setLoading(false);
       return true;
     } catch (error) {
