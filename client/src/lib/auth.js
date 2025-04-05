@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       try {
         const token = await getToken();
+        console.log("Retrieved token:", token ? "Token exists" : "No token found");
         if (!token) {
           setLoading(false);
           return;
@@ -26,7 +27,16 @@ export const AuthProvider = ({ children }) => {
         // We should have an endpoint to verify the token and get user data
         // For now, we'll just assume the token is valid
         // In a real app, we would verify the token and get user data
-        setUser({ isAuthenticated: true });
+        
+        const payload = JSON.parse(atob(token.split('.')[1]));
+
+        setUser({
+          isAuthenticated: true,
+          id: payload.userId,    
+          email: payload.email,  
+          role: payload.role 
+        });
+
         setLoading(false);
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -39,7 +49,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const adminLogin = async (email, password) => {
-    console.log('jjj')
     setLoading(true);
     try {
       const data = await authApi.adminLogin(email, password);
