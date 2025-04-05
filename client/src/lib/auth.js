@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }) => {
 // Auth protection hooks
 export function withAuth(Component) {
   return function AuthProtected(props) {
-    const { user, loading } = useAuth();
+    const { user, loading } = useContext(AuthContext);
     const router = useRouter();
 
     useEffect(() => {
@@ -125,7 +125,7 @@ export function withAuth(Component) {
 
 export function withAdminAuth(Component) {
   return function AdminProtected(props) {
-    const { user, loading, isAdmin } = useAuth();
+    const { user, loading, isAdmin } = useContext(AuthContext);
     const router = useRouter();
 
     useEffect(() => {
@@ -146,7 +146,7 @@ export function withAdminAuth(Component) {
 
 export function withResearcherAuth(Component) {
   return function ResearcherProtected(props) {
-    const { user, loading, isResearcher } = useAuth();
+    const { user, loading, isResearcher } = useContext(AuthContext);
     const router = useRouter();
 
     useEffect(() => {

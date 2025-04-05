@@ -15,7 +15,6 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const {adminLogin} = useContext(AuthContext);
-  // const { adminLogin } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -25,7 +24,6 @@ export default function AdminLoginPage() {
 
     try {
       const success = await adminLogin(email, password);
-      console.log(adminLogin)
       if (success) {
         router.push('/admin');
       } else {
