@@ -36,7 +36,7 @@ const upload = multer({
   }
 });
 
-// Admin routes
+// Admin routes, change back to strictLimit later
 router.post('/admin/login', strictLimit, authController.adminLogin);
 router.post('/admin/invite', authenticateAdminToken, authController.inviteResearcher);
 
