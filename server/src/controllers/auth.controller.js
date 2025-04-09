@@ -8,7 +8,6 @@ import logger from '../utils/logger.js';
 import generateSecurePassword from '../utils/passwordGenerator.js';
 
 class AuthController {
-  // Admin invite method for inviting researchers/lecturers
   inviteResearcher = asyncHandler(async (req, res) => {
     const { email } = req.body;
     
@@ -244,6 +243,33 @@ class AuthController {
     res.json({
       success: true,
       accessToken: tokens.accessToken
+    });
+  });
+
+  verifyToken = asyncHandler(async (req, res) => {
+    const userId = req.user.userId;
+    
+    logger.info(`Token verification request for user ID: ${userId}`);
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      logger.warn(`Token verification failed: User not found with ID ${userId}`);
+      throw new UnauthorizedError('User not found');
+    }
+    
+    logger.info(`Token verified successfully for user: ${user.email}`);
+    
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        faculty: user.faculty,
+        title: user.title,
+        profilePicture: user.profilePicture
+      }
     });
   });
 

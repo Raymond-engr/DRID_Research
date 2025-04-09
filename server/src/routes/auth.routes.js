@@ -47,6 +47,9 @@ router.post('/researcher/login', standardLimit, authController.researcherLogin);
 router.post('/refresh-token', authController.refreshToken);
 router.post('/logout', authController.logout);
 
+// Token verification route
+router.get('/verify-token', authenticateToken, authController.verifyToken);
+
 // Researcher profile completion from invitation
 router.post('/complete-profile/:token', upload.single('profilePicture'), authController.completeProfile);
 
