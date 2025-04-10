@@ -1,6 +1,6 @@
 import express from 'express';
 import authController from '../controllers/auth.controller.js';
-import { authenticateAdminToken, rateLimiter } from '../middleware/auth.middleware.js';
+import { authenticateAdminToken, authenticateToken, rateLimiter } from '../middleware/auth.middleware.js';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
