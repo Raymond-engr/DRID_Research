@@ -37,7 +37,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 function AdminArticlesPage() {
   const [articles, setArticles] = useState([]);
@@ -194,6 +194,7 @@ function AdminArticlesPage() {
               {error && (
                 <Alert variant="destructive" className="mb-4">
                   <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
@@ -342,3 +343,38 @@ function AdminArticlesPage() {
                       <td className="px-4 py-3">{article.date}</td>
                       <td className="px-4 py-3 flex items-center">
                         <Eye className="h-4 w-4 mr-1 text-gray-400" />
+                        {article.views}
+                      </td>
+                      <td className="px-4 py-3 flex items-center">
+                        <MessageSquare className="h-4 w-4 mr-1 text-gray-400" />
+                        {article.comments}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/articles/${article.id}`}>
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleDeleteArticle(article.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )};
