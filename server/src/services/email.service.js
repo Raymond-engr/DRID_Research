@@ -9,15 +9,17 @@ class EmailService {
       secure: process.env.SMTP_SECURE === 'true',
       auth: {
         user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
+        pass: process.env.SMTP_PASS,
+      },
     });
-    
+
     this.frontendUrl = process.env.FRONTEND_URL;
     this.emailFrom = process.env.EMAIL_FROM;
-    
+
     if (!this.frontendUrl || !this.emailFrom) {
-      throw new Error('FRONTEND_URL and EMAIL_FROM must be defined in environment variables');
+      throw new Error(
+        'FRONTEND_URL and EMAIL_FROM must be defined in environment variables'
+      );
     }
   }
 
@@ -35,7 +37,7 @@ class EmailService {
           <p>Please click the link below to complete your profile:</p>
           <a href="${inviteUrl}">${inviteUrl}</a>
           <p>This link will expire in 24 hours.</p>
-        `
+        `,
       });
     } catch (error) {
       throw new BadRequestError('Failed to send invitation email');
@@ -58,7 +60,7 @@ class EmailService {
           <p>Please click the link below to log in to your account:</p>
           <a href="${loginUrl}">${loginUrl}</a>
           <p>If you didn't request this account, please contact our support team.</p>
-        `
+        `,
       });
     } catch (error) {
       throw new BadRequestError('Failed to send credentials email');
@@ -76,10 +78,10 @@ class EmailService {
           <p>${researcher} has published a new article: "${articleTitle}"</p>
           <p>Visit our research portal to read the full article.</p>
           <a href="${this.frontendUrl}">Visit Research Portal</a>
-        `
+        `,
       });
     } catch (error) {
-      console.error('Failed to send notification email:', error);
+      logger.error('Failed to send notification email:', error);
       // Don't throw error here to prevent article publication from failing
     }
   }
