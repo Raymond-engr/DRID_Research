@@ -226,10 +226,9 @@ class AuthController {
     logger.info(
       `Refresh token attempt with token: ${refreshToken.substring(0, 8)}...`
     );
-    logger.info(`Refresh token attempt with token: ${refreshToken}...`);
 
     const payload = await tokenService.verifyRefreshToken(refreshToken);
-    const user = await User.findById(payload.userId);
+    const user = await User.findById(payload.userId).select('+refreshToken');
     logger.info(user, refreshToken, user.refreshToken);
 
     if (!user || user.refreshToken !== refreshToken) {
