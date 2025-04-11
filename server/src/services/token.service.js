@@ -96,13 +96,17 @@ class TokenService {
   }
 
   setRefreshTokenCookie(res, token) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const frontendDomain = new URL(process.env.FRONTEND_URL || 'http://localhost:3001').hostname;
+    
     res.cookie('refreshToken', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/'
-    });
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax', // Use 'none' in production to allow cross-site cookies
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/',
+    domain: frontendDomain === 'localhost' ? undefined : frontendDomain
+  });
   }
 
   clearRefreshTokenCookie(res) {

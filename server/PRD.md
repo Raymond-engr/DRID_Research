@@ -43,6 +43,8 @@ Profile picture (upload)
 
 Faculty/Department
 
+Bio (Interests or area of expertise)
+
 Title (e.g., Lecturer, Professor, Dr, Engr)
 
 
