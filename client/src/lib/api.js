@@ -72,11 +72,25 @@ async function requestWithAuth(config, retryCount = 0) {
 
 export async function refreshAccessToken() {
   try {
-    const response = await apiClient.post('/auth/refresh-token');
-    await saveToken(response.data.accessToken);
-    return true;
+    console.log('Attempting to refresh token...');
+    console.log('Cookie available:', document.cookie.includes('refreshToken'));
+
+    const response = await apiClient.post('/auth/refresh-token', {}, {
+      withCredentials: true,
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      }
+    });
+    console.log('Refresh response:', response);
+    if (response.data.accessToken) {
+      await saveToken(response.data.accessToken);
+      return true;
+    }
+    return false;
   } catch (error) {
     console.error('Failed to refresh token:', error);
+    console.error('Response data:', error.response?.data);
+    console.error('Status code:', error.response?.status);
     return false;
   }
 }
