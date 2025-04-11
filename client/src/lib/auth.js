@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { authApi } from './api';
-import { getToken, removeToken } from './indexdb';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import { useRouter } from "next/navigation";
+import { authApi } from "./api";
+import { getToken, removeToken } from "./indexdb";
 
 export const AuthContext = createContext({
   adminLogin: async () => {},
@@ -14,7 +20,7 @@ export const AuthContext = createContext({
   isResearcher: false,
   user: null,
   loading: true,
-  error: null
+  error: null,
 });
 
 export const AuthProvider = ({ children }) => {
@@ -23,12 +29,14 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const router = useRouter();
 
+  console.log("check auth");
   const checkAuth = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const token = await getToken();
+      console.log(token);
       if (!token) {
         setUser(null);
         setLoading(false);
@@ -40,25 +48,25 @@ export const AuthProvider = ({ children }) => {
         const response = await authApi.verifyToken();
         setUser({
           ...response.user,
-          isAuthenticated: true
+          isAuthenticated: true,
         });
         return true;
       } catch (error) {
-        console.error('Token verification failed:', error);
-        
+        console.error("Token verification failed:", error);
+
         // Handle specific error conditions
         if (error.status === 401) {
           await removeToken();
         }
-        
+
         setUser(null);
-        setError(error.message || 'Authentication failed');
+        setError(error.message || "Authentication failed");
         return false;
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error("Auth check failed:", error);
       setUser(null);
-      setError('Authentication check failed');
+      setError("Authentication check failed");
       return false;
     } finally {
       setLoading(false);
@@ -78,12 +86,12 @@ export const AuthProvider = ({ children }) => {
       setUser({
         ...data.user,
         isAuthenticated: true,
-        role: 'admin',
+        role: "admin",
       });
       return true;
     } catch (error) {
-      console.error('Login failed:', error);
-      setError(error.message || 'Login failed');
+      console.error("Login failed:", error);
+      setError(error.message || "Login failed");
       return false;
     } finally {
       setLoading(false);
@@ -98,12 +106,12 @@ export const AuthProvider = ({ children }) => {
       setUser({
         ...data.user,
         isAuthenticated: true,
-        role: 'researcher',
+        role: "researcher",
       });
       return true;
     } catch (error) {
-      console.error('Login failed:', error);
-      setError(error.message || 'Login failed');
+      console.error("Login failed:", error);
+      setError(error.message || "Login failed");
       return false;
     } finally {
       setLoading(false);
@@ -115,13 +123,13 @@ export const AuthProvider = ({ children }) => {
     try {
       await authApi.logout();
     } catch (error) {
-      console.error('Logout failed:', error);
-      setError(error.message || 'Logout failed');
+      console.error("Logout failed:", error);
+      setError(error.message || "Logout failed");
     } finally {
       await removeToken();
       setUser(null);
       setLoading(false);
-      router.push('/');
+      router.push("/");
     }
   };
 
@@ -136,8 +144,8 @@ export const AuthProvider = ({ children }) => {
         logout,
         checkAuth,
         isAuthenticated: !!user,
-        isAdmin: user?.role === 'admin',
-        isResearcher: user?.role === 'researcher',
+        isAdmin: user?.role === "admin",
+        isResearcher: user?.role === "researcher",
       }}
     >
       {children}
@@ -157,15 +165,15 @@ export function withAuth(Component) {
       // If initial auth check failed but we haven't retried yet, try again
       if (!loading && !user && error && retryCount < MAX_RETRIES) {
         const retryAuth = async () => {
-          setRetryCount(prev => prev + 1);
+          setRetryCount((prev) => prev + 1);
           const success = await checkAuth();
           if (!success) {
-            router.push('/researcher-login');
+            router.push("/researcher-login");
           }
         };
         retryAuth();
       } else if (!loading && !user && retryCount >= MAX_RETRIES) {
-        router.push('/researcher-login');
+        router.push("/researcher-login");
       }
     }, [user, loading, error, router, checkAuth, retryCount]);
 
@@ -178,7 +186,8 @@ export function withAuth(Component) {
 
 export function withAdminAuth(Component) {
   return function AdminProtected(props) {
-    const { user, loading, error, isAdmin, checkAuth } = useContext(AuthContext);
+    const { user, loading, error, isAdmin, checkAuth } =
+      useContext(AuthContext);
     const router = useRouter();
     const [retryCount, setRetryCount] = useState(0);
     const MAX_RETRIES = 1;
@@ -186,18 +195,18 @@ export function withAdminAuth(Component) {
     useEffect(() => {
       if (!loading && !user && error && retryCount < MAX_RETRIES) {
         const retryAuth = async () => {
-          setRetryCount(prev => prev + 1);
+          setRetryCount((prev) => prev + 1);
           const success = await checkAuth();
           if (!success || !isAdmin) {
-            router.push('/admin-login');
+            router.push("/admin-login");
           }
         };
         retryAuth();
       } else if (!loading) {
         if (!user) {
-          router.push('/admin-login');
+          router.push("/admin-login");
         } else if (!isAdmin) {
-          router.push('/');
+          router.push("/");
         }
       }
     }, [user, loading, isAdmin, error, router, checkAuth, retryCount]);
@@ -211,7 +220,8 @@ export function withAdminAuth(Component) {
 
 export function withResearcherAuth(Component) {
   return function ResearcherProtected(props) {
-    const { user, loading, error, isResearcher, checkAuth } = useContext(AuthContext);
+    const { user, loading, error, isResearcher, checkAuth } =
+      useContext(AuthContext);
     const router = useRouter();
     const [retryCount, setRetryCount] = useState(0);
     const MAX_RETRIES = 1;
@@ -219,18 +229,18 @@ export function withResearcherAuth(Component) {
     useEffect(() => {
       if (!loading && !user && error && retryCount < MAX_RETRIES) {
         const retryAuth = async () => {
-          setRetryCount(prev => prev + 1);
+          setRetryCount((prev) => prev + 1);
           const success = await checkAuth();
           if (!success || !isResearcher) {
-            router.push('/researcher-login');
+            router.push("/researcher-login");
           }
         };
         retryAuth();
       } else if (!loading) {
         if (!user) {
-          router.push('/researcher-login');
+          router.push("/researcher-login");
         } else if (!isResearcher) {
-          router.push('/');
+          router.push("/");
         }
       }
     }, [user, loading, isResearcher, error, router, checkAuth, retryCount]);

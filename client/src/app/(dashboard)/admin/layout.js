@@ -1,11 +1,11 @@
 // app/(dashboard)/admin/layout.js
-'use client';
+"use client";
 
-import { useContext, useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { AuthContext } from '@/lib/auth';
-import { Button } from '@/components/ui/button';
+import { useContext, useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { AuthContext, AuthProvider } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   FileText,
@@ -15,7 +15,7 @@ import {
   Menu,
   X,
   ChevronRight,
-} from 'lucide-react';
+} from "lucide-react";
 
 export default function AdminDashboardLayout({ children }) {
   const { user, logout, isAdmin, loading } = useContext(AuthContext);
@@ -27,7 +27,7 @@ export default function AdminDashboardLayout({ children }) {
     if (!loading && (!user || !isAdmin)) {
       console.log("Auth check in layout:", { user, isAdmin, loading });
       if (user !== null || isAdmin !== false) {
-        router.push('/admin-login');
+        router.push("/admin-login");
       }
     }
   }, [user, loading, isAdmin, router]);
@@ -42,25 +42,31 @@ export default function AdminDashboardLayout({ children }) {
   }
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    { name: 'Articles', href: '/admin/articles', icon: FileText },
-    { name: 'Researchers', href: '/admin/researchers', icon: Users },
-    { name: 'Invitations', href: '/admin/invitations', icon: Mail },
+    { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { name: "Articles", href: "/admin/articles", icon: FileText },
+    { name: "Researchers", href: "/admin/researchers", icon: Users },
+    { name: "Invitations", href: "/admin/invitations", icon: Mail },
   ];
 
   const handleLogout = async () => {
     await logout();
-    router.push('/admin-login');
+    router.push("/admin-login");
   };
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">
       {/* Mobile sidebar */}
       <div className="md:hidden">
-        <div className={`fixed inset-0 bg-gray-600 bg-opacity-75 z-40 transition-opacity ease-linear duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
-        <div className={`fixed inset-y-0 left-0 flex flex-col z-40 w-72 bg-white shadow-xl transform ease-in-out duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div
+          className={`fixed inset-0 bg-gray-600 bg-opacity-75 z-40 transition-opacity ease-linear duration-300 ${sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        />
+        <div
+          className={`fixed inset-y-0 left-0 flex flex-col z-40 w-72 bg-white shadow-xl transform ease-in-out duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        >
           <div className="flex items-center justify-between px-4 py-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800">Admin Dashboard</h2>
+            <h2 className="text-xl font-semibold text-gray-800">
+              Admin Dashboard
+            </h2>
             <button
               className="p-1 text-gray-500 focus:outline-none"
               onClick={() => setSidebarOpen(false)}
@@ -79,13 +85,13 @@ export default function AdminDashboardLayout({ children }) {
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                       isActive
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
                     <item.icon
                       className={`mr-3 h-5 w-5 ${
-                        isActive ? 'text-blue-700' : 'text-gray-400'
+                        isActive ? "text-blue-700" : "text-gray-400"
                       }`}
                     />
                     {item.name}
@@ -112,7 +118,9 @@ export default function AdminDashboardLayout({ children }) {
         <div className="flex flex-col w-64">
           <div className="flex flex-col h-0 flex-1 bg-white border-r border-gray-200">
             <div className="flex items-center h-16 flex-shrink-0 px-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-800">Admin Dashboard</h2>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Admin Dashboard
+              </h2>
             </div>
             <div className="flex-1 flex flex-col overflow-y-auto">
               <nav className="flex-1 px-2 py-4 space-y-1">
@@ -124,13 +132,13 @@ export default function AdminDashboardLayout({ children }) {
                       href={item.href}
                       className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                         isActive
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? "bg-blue-50 text-blue-700"
+                          : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       <item.icon
                         className={`mr-3 h-5 w-5 ${
-                          isActive ? 'text-blue-700' : 'text-gray-400'
+                          isActive ? "text-blue-700" : "text-gray-400"
                         }`}
                       />
                       {item.name}
@@ -169,7 +177,7 @@ export default function AdminDashboardLayout({ children }) {
             <div className="flex items-center">
               <div className="ml-3 relative">
                 <div className="text-sm font-medium text-gray-700">
-                  {user?.name || 'Admin'}
+                  {user?.name || "Admin"}
                 </div>
               </div>
             </div>
@@ -178,9 +186,7 @@ export default function AdminDashboardLayout({ children }) {
 
         {/* Main content area */}
         <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-100">
-          <div className="py-6 px-4 sm:px-6 md:px-8">
-            {children}
-          </div>
+          <div className="py-6 px-4 sm:px-6 md:px-8">{children}</div>
         </main>
       </div>
     </div>
