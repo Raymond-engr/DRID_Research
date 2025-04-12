@@ -22,59 +22,86 @@ export class ApiError extends Error {
 const MAX_RETRY_ATTEMPTS = 1;
 
 async function requestWithAuth(config, retryCount = 0) {
-  const accessToken = await getToken();
-  console.log(accessToken);
-
-  if (accessToken) {
-    config.headers = {
-      ...config.headers,
-      Authorization: `Bearer ${accessToken}`,
-    };
-  }
-
   try {
-    const response = await apiClient(config);
-    return response.data;
-  } catch (error) {
-    // Handle 401 Unauthorized (token refresh logic)
-    if (
-      error.response?.status === 401 &&
-      retryCount < MAX_RETRY_ATTEMPTS &&
-      config.url !== "/auth/refresh-token"
-    ) {
-      try {
-        const refreshed = await refreshAccessToken();
-        if (refreshed) {
-          // Retry the original request with new access token
-          return requestWithAuth(config, retryCount + 1);
-        } else {
-          // await removeToken();
-          throw new ApiError("Session expired", 401);
+    const accessToken = await getToken();
+    console.log(
+      "Token in requestWithAuth:",
+      accessToken ? "Token exists" : "No token"
+    );
+
+    if (accessToken) {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${accessToken}`,
+      };
+    } else {
+      console.warn("No access token found when making authenticated request");
+      if (config.url !== "/auth/refresh-token") {
+        // Try to refresh token if we don't have one
+        try {
+          const refreshed = await refreshAccessToken();
+          if (refreshed) {
+            // Retry with the new token
+            return requestWithAuth(config, retryCount);
+          }
+        } catch (refreshError) {
+          console.error("Failed to refresh token:", refreshError);
+          throw new ApiError("Authentication required", 401);
         }
-      } catch (refreshError) {
-        await removeToken();
-        console.log(refreshError);
-        // throw new ApiError('Authentication failed', 401);
       }
     }
 
-    // Improved error handling with more specific information
-    let errorMessage = "An unexpected error occurred";
-    let errorStatus = error.response?.status || 500;
-
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error.message) {
-      errorMessage = error.message;
-      // Network errors don't have response status
-      if (error.message.includes("Network Error")) {
-        errorStatus = 0;
-        errorMessage =
-          "Unable to connect to server. Please check your internet connection.";
+    try {
+      const response = await apiClient(config);
+      return response.data;
+    } catch (error) {
+      // Handle 401 Unauthorized (token refresh logic)
+      if (
+        error.response?.status === 401 &&
+        retryCount < MAX_RETRY_ATTEMPTS &&
+        config.url !== "/auth/refresh-token"
+      ) {
+        console.log("Got 401, attempting token refresh...");
+        try {
+          const refreshed = await refreshAccessToken();
+          if (refreshed) {
+            // Retry the original request with new access token
+            console.log("Token refreshed, retrying original request");
+            return requestWithAuth(config, retryCount + 1);
+          } else {
+            console.log("Token refresh failed");
+            await removeToken();
+            throw new ApiError("Session expired", 401);
+          }
+        } catch (refreshError) {
+          console.error("Error during token refresh:", refreshError);
+          await removeToken();
+          throw new ApiError("Authentication failed", 401);
+        }
       }
-    }
 
-    throw new ApiError(errorMessage, errorStatus);
+      // Improved error handling with more specific information
+      let errorMessage = "An unexpected error occurred";
+      let errorStatus = error.response?.status || 500;
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+        // Network errors don't have response status
+        if (error.message.includes("Network Error")) {
+          errorStatus = 0;
+          errorMessage =
+            "Unable to connect to server. Please check your internet connection.";
+        }
+      }
+
+      console.error(`API Error: ${errorStatus} - ${errorMessage}`);
+      throw new ApiError(errorMessage, errorStatus);
+    }
+  } catch (error) {
+    console.error("Error in requestWithAuth:", error);
+    throw error;
   }
 }
 
@@ -89,12 +116,17 @@ export async function refreshAccessToken() {
         withCredentials: true,
       }
     );
-    console.log("Refresh response:", response);
+
+    console.log("Refresh response:", response.data);
+
     if (response.data.accessToken) {
+      console.log("New access token received");
       await saveToken(response.data.accessToken);
       return true;
+    } else {
+      console.warn("No access token in refresh response");
+      return false;
     }
-    return false;
   } catch (error) {
     console.error("Failed to refresh token:", error);
     console.error("Response data:", error.response?.data);
@@ -103,6 +135,7 @@ export async function refreshAccessToken() {
   }
 }
 
+// Rest of your code remains the same...
 export const authApi = {
   adminLogin: async (email, password) => {
     try {

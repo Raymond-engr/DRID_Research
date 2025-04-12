@@ -8,7 +8,7 @@ import {
   useCallback,
 } from "react";
 import { useRouter } from "next/navigation";
-import { authApi } from "./api";
+import { authApi, refreshAccessToken } from "./api";
 import { getToken, removeToken } from "./indexdb";
 
 export const AuthContext = createContext({
@@ -29,23 +29,33 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  console.log("check auth");
+  console.log("AuthProvider initialized");
+
   const checkAuth = useCallback(async () => {
+    console.log("Checking authentication...");
     try {
       setLoading(true);
       setError(null);
 
       const token = await getToken();
-      console.log(token);
+      console.log(
+        "Token in checkAuth:",
+        token ? `${token.substring(0, 10)}...` : "No token"
+      );
+
       if (!token) {
+        console.log("No token found, user not authenticated");
         setUser(null);
         setLoading(false);
         return false;
       }
 
       try {
-        // Actually verify the token with the server
+        // First check if the current token is valid
+        console.log("Verifying token with server...");
         const response = await authApi.verifyToken();
+        console.log("Token verification successful:", response);
+
         setUser({
           ...response.user,
           isAuthenticated: true,
@@ -54,9 +64,31 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.error("Token verification failed:", error);
 
-        // Handle specific error conditions
+        // Try refreshing the token
         if (error.status === 401) {
-          await removeToken();
+          console.log("Attempting to refresh token after failed verification");
+          const refreshSuccess = await refreshAccessToken();
+
+          if (refreshSuccess) {
+            console.log("Token refreshed successfully, verifying again");
+            try {
+              const response = await authApi.verifyToken();
+              setUser({
+                ...response.user,
+                isAuthenticated: true,
+              });
+              return true;
+            } catch (verifyError) {
+              console.error("Verification after refresh failed:", verifyError);
+              await removeToken();
+              setUser(null);
+              setError("Session expired. Please login again.");
+              return false;
+            }
+          } else {
+            console.log("Token refresh failed, clearing token");
+            await removeToken();
+          }
         }
 
         setUser(null);
@@ -75,6 +107,7 @@ export const AuthProvider = ({ children }) => {
 
   // Run auth check on initial load
   useEffect(() => {
+    console.log("Running initial auth check");
     checkAuth();
   }, [checkAuth]);
 
@@ -82,7 +115,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
+      console.log("Attempting admin login for:", email);
       const data = await authApi.adminLogin(email, password);
+      console.log("Admin login successful:", data);
       setUser({
         ...data.user,
         isAuthenticated: true,
@@ -90,7 +125,7 @@ export const AuthProvider = ({ children }) => {
       });
       return true;
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Admin login failed:", error);
       setError(error.message || "Login failed");
       return false;
     } finally {
@@ -102,7 +137,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
+      console.log("Attempting researcher login for:", email);
       const data = await authApi.researcherLogin(email, password);
+      console.log("Researcher login successful:", data);
       setUser({
         ...data.user,
         isAuthenticated: true,
@@ -110,7 +147,7 @@ export const AuthProvider = ({ children }) => {
       });
       return true;
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Researcher login failed:", error);
       setError(error.message || "Login failed");
       return false;
     } finally {
@@ -121,11 +158,14 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     setLoading(true);
     try {
+      console.log("Logging out...");
       await authApi.logout();
+      console.log("Logout API call successful");
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error("Logout API call failed:", error);
       setError(error.message || "Logout failed");
     } finally {
+      console.log("Removing local token");
       await removeToken();
       setUser(null);
       setLoading(false);
@@ -153,7 +193,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Auth protection hooks with improved error handling
 export function withAuth(Component) {
   return function AuthProtected(props) {
     const { user, loading, error, checkAuth } = useContext(AuthContext);
@@ -165,14 +204,17 @@ export function withAuth(Component) {
       // If initial auth check failed but we haven't retried yet, try again
       if (!loading && !user && error && retryCount < MAX_RETRIES) {
         const retryAuth = async () => {
+          console.log("Retrying authentication...");
           setRetryCount((prev) => prev + 1);
           const success = await checkAuth();
           if (!success) {
+            console.log("Auth retry failed, redirecting to login");
             router.push("/researcher-login");
           }
         };
         retryAuth();
       } else if (!loading && !user && retryCount >= MAX_RETRIES) {
+        console.log("Max retries reached, redirecting to login");
         router.push("/researcher-login");
       }
     }, [user, loading, error, router, checkAuth, retryCount]);
