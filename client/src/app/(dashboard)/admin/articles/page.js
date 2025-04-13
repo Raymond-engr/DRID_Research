@@ -1,23 +1,22 @@
-// app/(dashboard)/admin/articles/page.js
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { withAdminAuth } from '@/lib/auth';
-import { articlesApi } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { 
-  PlusCircle, 
-  Search, 
-  Edit, 
-  Trash2, 
+import { useState, useEffect } from "react";
+import { withAdminAuth } from "@/lib/auth";
+import { articlesApi } from "@/lib/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  PlusCircle,
+  Search,
+  Edit,
+  Trash2,
   RefreshCw,
   Eye,
   MessageSquare,
-  Filter
-} from 'lucide-react';
-import Link from 'next/link';
+  Filter,
+} from "lucide-react";
+import Link from "next/link";
 import {
   Select,
   SelectContent,
@@ -34,25 +33,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 function AdminArticlesPage() {
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    category: 'Research',
-    researcherId: '',
+    title: "",
+    content: "",
+    category: "Research",
+    researcherId: "",
   });
   const [researchers, setResearchers] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -60,32 +59,71 @@ function AdminArticlesPage() {
       try {
         // In a real implementation, you would fetch this data from your API
         // For now, we'll use mock data
-        
+
         const mockArticles = [
-          { id: 1, title: "Advances in AI Research", category: "Research", views: 245, comments: 12, date: "2025-03-15", researcherName: "Dr. Jane Smith" },
-          { id: 2, title: "Blockchain Technology Applications", category: "Innovation", views: 187, comments: 8, date: "2025-03-10", researcherName: "Prof. John Doe" },
-          { id: 3, title: "Sustainable Energy Solutions", category: "Development", views: 320, comments: 15, date: "2025-03-05", researcherName: "Dr. Michael Chen" },
-          { id: 4, title: "Quantum Computing Breakthroughs", category: "Research", views: 156, comments: 7, date: "2025-02-28", researcherName: "Dr. Jane Smith" },
-          { id: 5, title: "Future of Remote Work", category: "Innovation", views: 215, comments: 19, date: "2025-02-20", researcherName: "Dr. Lisa Brown" }
+          {
+            id: 1,
+            title: "Advances in AI Research",
+            category: "Research",
+            views: 245,
+            comments: 12,
+            date: "2025-03-15",
+            researcherName: "Dr. Jane Smith",
+          },
+          {
+            id: 2,
+            title: "Blockchain Technology Applications",
+            category: "Innovation",
+            views: 187,
+            comments: 8,
+            date: "2025-03-10",
+            researcherName: "Prof. John Doe",
+          },
+          {
+            id: 3,
+            title: "Sustainable Energy Solutions",
+            category: "Development",
+            views: 320,
+            comments: 15,
+            date: "2025-03-05",
+            researcherName: "Dr. Michael Chen",
+          },
+          {
+            id: 4,
+            title: "Quantum Computing Breakthroughs",
+            category: "Research",
+            views: 156,
+            comments: 7,
+            date: "2025-02-28",
+            researcherName: "Dr. Jane Smith",
+          },
+          {
+            id: 5,
+            title: "Future of Remote Work",
+            category: "Innovation",
+            views: 215,
+            comments: 19,
+            date: "2025-02-20",
+            researcherName: "Dr. Lisa Brown",
+          },
         ];
-        
+
         const mockResearchers = [
           { id: 1, name: "Dr. Jane Smith", faculty: "Computer Science" },
           { id: 2, name: "Prof. John Doe", faculty: "Engineering" },
           { id: 3, name: "Dr. Michael Chen", faculty: "Environmental Science" },
           { id: 4, name: "Dr. Lisa Brown", faculty: "Social Sciences" },
         ];
-        
+
         setArticles(mockArticles);
         setResearchers(mockResearchers);
         setIsLoading(false);
-        
+
         // In a real implementation, you would fetch this data from your API like:
         // const articles = await articlesApi.getArticles();
         // const researchers = await researchersApi.getResearchers();
-        
       } catch (error) {
-        console.error('Error fetching articles:', error);
+        console.error("Error fetching articles:", error);
         setIsLoading(false);
       }
     };
@@ -108,13 +146,13 @@ function AdminArticlesPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
     try {
       // In a real implementation, you would call your API
       // const response = await articlesApi.createArticle(formData);
-      
+
       // For now, we'll just simulate the response
       const newArticle = {
         id: articles.length + 1,
@@ -122,44 +160,48 @@ function AdminArticlesPage() {
         category: formData.category,
         views: 0,
         comments: 0,
-        date: new Date().toISOString().split('T')[0],
-        researcherName: researchers.find(r => r.id.toString() === formData.researcherId)?.name || 'Unknown',
+        date: new Date().toISOString().split("T")[0],
+        researcherName:
+          researchers.find((r) => r.id.toString() === formData.researcherId)
+            ?.name || "Unknown",
       };
-      
+
       setArticles([newArticle, ...articles]);
       setShowAddDialog(false);
       setFormData({
-        title: '',
-        content: '',
-        category: 'Research',
-        researcherId: '',
+        title: "",
+        content: "",
+        category: "Research",
+        researcherId: "",
       });
     } catch (error) {
-      setError(error.message || 'Failed to create article');
+      setError(error.message || "Failed to create article");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteArticle = async (id) => {
-    if (confirm('Are you sure you want to delete this article?')) {
+    if (confirm("Are you sure you want to delete this article?")) {
       try {
         // In a real implementation, you would call your API
         // await articlesApi.deleteArticle(id);
-        
+
         // For now, we'll just update the local state
-        setArticles(articles.filter(article => article.id !== id));
+        setArticles(articles.filter((article) => article.id !== id));
       } catch (error) {
-        console.error('Error deleting article:', error);
+        console.error("Error deleting article:", error);
       }
     }
   };
 
-  const filteredArticles = articles.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          article.researcherName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || article.category === categoryFilter;
-    
+  const filteredArticles = articles.filter((article) => {
+    const matchesSearch =
+      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      article.researcherName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "all" || article.category === categoryFilter;
+
     return matchesSearch && matchesCategory;
   });
 
@@ -174,7 +216,9 @@ function AdminArticlesPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold tracking-tight">Articles Management</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Articles Management
+        </h1>
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
           <DialogTrigger asChild>
             <Button>
@@ -189,7 +233,7 @@ function AdminArticlesPage() {
                 Create a new research article to be published on the platform.
               </DialogDescription>
             </DialogHeader>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4 py-4">
               {error && (
                 <Alert variant="destructive" className="mb-4">
@@ -198,7 +242,7 @@ function AdminArticlesPage() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
                 <Input
@@ -210,12 +254,12 @@ function AdminArticlesPage() {
                   required
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select 
-                    value={formData.category} 
+                  <Select
+                    value={formData.category}
                     onValueChange={handleCategoryChange}
                   >
                     <SelectTrigger>
@@ -228,11 +272,11 @@ function AdminArticlesPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="researcher">Researcher</Label>
-                  <Select 
-                    value={formData.researcherId} 
+                  <Select
+                    value={formData.researcherId}
                     onValueChange={handleResearcherChange}
                   >
                     <SelectTrigger>
@@ -240,7 +284,10 @@ function AdminArticlesPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {researchers.map((researcher) => (
-                        <SelectItem key={researcher.id} value={researcher.id.toString()}>
+                        <SelectItem
+                          key={researcher.id}
+                          value={researcher.id.toString()}
+                        >
                           {researcher.name}
                         </SelectItem>
                       ))}
@@ -248,7 +295,7 @@ function AdminArticlesPage() {
                   </Select>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="content">Content</Label>
                 <Textarea
@@ -261,20 +308,24 @@ function AdminArticlesPage() {
                   required
                 />
               </div>
-              
+
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAddDialog(false)}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Creating...' : 'Create Article'}
+                  {isSubmitting ? "Creating..." : "Create Article"}
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
       </div>
-      
+
       {/* Filters */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="relative w-full sm:w-64">
@@ -286,7 +337,7 @@ function AdminArticlesPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-gray-500" />
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -302,7 +353,7 @@ function AdminArticlesPage() {
           </Select>
         </div>
       </div>
-      
+
       {/* Articles List */}
       <Card>
         <CardContent className="p-0">
@@ -312,7 +363,9 @@ function AdminArticlesPage() {
                 <tr className="border-b">
                   <th className="px-4 py-3 text-left font-medium">Title</th>
                   <th className="px-4 py-3 text-left font-medium">Category</th>
-                  <th className="px-4 py-3 text-left font-medium">Researcher</th>
+                  <th className="px-4 py-3 text-left font-medium">
+                    Researcher
+                  </th>
                   <th className="px-4 py-3 text-left font-medium">Date</th>
                   <th className="px-4 py-3 text-left font-medium">Views</th>
                   <th className="px-4 py-3 text-left font-medium">Comments</th>
@@ -322,7 +375,10 @@ function AdminArticlesPage() {
               <tbody>
                 {filteredArticles.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
+                    <td
+                      colSpan="7"
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
                       No articles found.
                     </td>
                   </tr>
@@ -331,11 +387,15 @@ function AdminArticlesPage() {
                     <tr key={article.id} className="border-b hover:bg-gray-50">
                       <td className="px-4 py-3 font-medium">{article.title}</td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          article.category === 'Research' ? 'bg-blue-100 text-blue-800' :
-                          article.category === 'Innovation' ? 'bg-green-100 text-green-800' :
-                          'bg-amber-100 text-amber-800'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            article.category === "Research"
+                              ? "bg-blue-100 text-blue-800"
+                              : article.category === "Innovation"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
                           {article.category}
                         </span>
                       </td>
@@ -359,8 +419,8 @@ function AdminArticlesPage() {
                           <Button variant="ghost" size="sm">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteArticle(article.id)}
                           >
@@ -377,4 +437,7 @@ function AdminArticlesPage() {
         </CardContent>
       </Card>
     </div>
-  )};
+  );
+}
+
+export default withAdminAuth(AdminArticlesPage);
