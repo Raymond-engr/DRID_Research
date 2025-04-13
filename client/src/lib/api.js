@@ -217,10 +217,43 @@ export const authApi = {
   inviteResearcher: async (email) => {
     return requestWithAuth({
       method: "post",
-      url: "/auth/admin/invite",
+      url: "/admin/researchers/invite",
       data: { email },
     });
   },
+  
+getInvitations: async () => {
+  return requestWithAuth({
+    method: "get",
+    url: "/admin/invitations",
+  });
+},
+
+resendInvitation: async (id) => {
+  return requestWithAuth({
+    method: "post",
+    url: `/admin/invitations/${id}/resend`,
+  });
+},
+
+deleteInvitation: async (id) => {
+  return requestWithAuth({
+    method: "delete",
+    url: `/admin/invitations/${id}`,
+  });
+},
+
+addResearcherProfile: async (formData) => {
+  // Special instance for multipart/form-data
+  return requestWithAuth({
+    method: "post",
+    url: "/admin/researchers/add",
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+},
 };
 
 export const articlesApi = {
