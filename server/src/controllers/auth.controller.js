@@ -257,7 +257,7 @@ class AuthController {
   });
 
   verifyToken = asyncHandler(async (req, res) => {
-    const userId = req.user.userId;
+    const userId = req.user._id;
 
     logger.info(`Token verification request for user ID: ${userId}`);
 
