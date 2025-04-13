@@ -157,11 +157,12 @@ function ResearchersPage() {
                 <Card key={researcher.id} className="overflow-hidden">
                   <div className="flex items-center justify-center bg-gray-100 h-40">
                     {researcher.profilePicture ? (
-                      <Image
-                        src={researcher.profilePicture}
-                        alt={`${researcher.name}`}
-                        className="h-full w-full object-cover"
-                      />
+                      <div
+                        className="h-40 w-full bg-contain bg-center bg-no-repeat"
+                        style={{
+                          backgroundImage: `url(${researcher.profilePicture})`,
+                        }}
+                      ></div>
                     ) : (
                       <User className="h-16 w-16 text-gray-400" />
                     )}
