@@ -6,7 +6,6 @@ import path from "path";
 
 const router = express.Router();
 
-// Secure all admin routes with admin authentication middleware
 router.use(authenticateAdminToken);
 
 // Researchers management
@@ -17,6 +16,7 @@ router.post(
     adminController.addResearcherProfile
 );
 router.get("/researchers", adminController.getResearchers);
+router.delete("/researchers/:id", adminController.deleteResearcher);
 
 // Invitations management
 router.get("/invitations", adminController.getInvitations);

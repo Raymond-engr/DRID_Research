@@ -104,6 +104,33 @@ class AdminController {
     });
   });
 
+// Delete a researcher profile
+deleteResearcher = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  
+  logger.info(`Researcher deletion request for ID: ${id}`);
+  
+  const researcher = await User.findById(id);
+  
+  if (!researcher) {
+    logger.warn(`Attempt to delete non-existent researcher with ID: ${id}`);
+    throw new NotFoundError('Researcher not found');
+  }
+  
+  if (researcher.role !== 'researcher') {
+    logger.warn(`Attempt to delete non-researcher account with ID: ${id}`);
+    throw new BadRequestError('Can only delete researcher accounts');
+  }
+  
+  await User.findByIdAndDelete(id);
+  logger.info(`Researcher profile deleted for: ${researcher.email}`);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Researcher profile deleted successfully',
+  });
+});
+
   // Get all researchers
   getResearchers = asyncHandler(async (req, res) => {
     const researchers = await User.find({ 
