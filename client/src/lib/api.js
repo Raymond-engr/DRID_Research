@@ -221,39 +221,39 @@ export const authApi = {
       data: { email },
     });
   },
-  
-getInvitations: async () => {
-  return requestWithAuth({
-    method: "get",
-    url: "/admin/invitations",
-  });
-},
 
-resendInvitation: async (id) => {
-  return requestWithAuth({
-    method: "post",
-    url: `/admin/invitations/${id}/resend`,
-  });
-},
+  getInvitations: async () => {
+    return requestWithAuth({
+      method: "get",
+      url: "/admin/invitations",
+    });
+  },
 
-deleteInvitation: async (id) => {
-  return requestWithAuth({
-    method: "delete",
-    url: `/admin/invitations/${id}`,
-  });
-},
+  resendInvitation: async (id) => {
+    return requestWithAuth({
+      method: "post",
+      url: `/admin/invitations/${id}/resend`,
+    });
+  },
 
-addResearcherProfile: async (formData) => {
-  // Special instance for multipart/form-data
-  return requestWithAuth({
-    method: "post",
-    url: "/admin/researchers/add",
-    data: formData,
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-},
+  deleteInvitation: async (id) => {
+    return requestWithAuth({
+      method: "delete",
+      url: `/admin/invitations/${id}`,
+    });
+  },
+
+  addResearcherProfile: async (formData) => {
+    // Special instance for multipart/form-data
+    return requestWithAuth({
+      method: "post",
+      url: "/admin/researchers/add",
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
 };
 
 export const articlesApi = {
@@ -293,7 +293,7 @@ export const researchersApi = {
   getResearchers: async () => {
     return requestWithAuth({
       method: "get",
-      url: "/researchers",
+      url: "/admin/researchers",
     });
   },
 
@@ -301,6 +301,13 @@ export const researchersApi = {
     return requestWithAuth({
       method: "get",
       url: `/researchers/${id}`,
+    });
+  },
+
+  deleteResearcher: async (id) => {
+    return requestWithAuth({
+      method: "delete",
+      url: `/admin/researchers/${id}`,
     });
   },
 
