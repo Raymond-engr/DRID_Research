@@ -8,52 +8,6 @@ import logger from '../utils/logger.js';
 import generateSecurePassword from '../utils/passwordGenerator.js';
 
 class AuthController {
-  inviteResearcher = asyncHandler(async (req, res) => {
-    const { email } = req.body;
-
-    logger.info(`Invitation request received for email: ${email}`);
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      logger.warn(`Attempt to invite already registered email: ${email}`);
-      throw new BadRequestError('Email already registered');
-    }
-
-    // Generate invite token
-    const inviteToken = crypto.randomBytes(32).toString('hex');
-    const hashedToken = crypto
-      .createHash('sha256')
-      .update(inviteToken)
-      .digest('hex');
-
-    // Store invitation
-    const invitation = {
-      email,
-      inviteToken: hashedToken,
-      inviteTokenExpires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-    };
-
-    // Save invitation to database
-    await User.create({
-      email,
-      inviteToken: hashedToken,
-      inviteTokenExpires: invitation.inviteTokenExpires,
-      role: 'researcher',
-      isActive: false,
-    });
-
-    logger.info(`Created invitation record for email: ${email}`);
-
-    // Send invitation email
-    await emailService.sendInvitationEmail(email, inviteToken);
-    logger.info(`Invitation email sent to: ${email}`);
-
-    res.status(200).json({
-      success: true,
-      message: 'Invitation sent successfully',
-    });
-  });
-
   // Complete profile from invitation
   completeProfile = asyncHandler(async (req, res) => {
     const { token } = req.params;
