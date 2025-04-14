@@ -32,6 +32,7 @@ class AdminController {
       email,
       inviteToken: hashedToken,
       inviteTokenExpires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      invitationStatus: 'pending'
     };
 
     // Save invitation to database
@@ -40,6 +41,7 @@ class AdminController {
       inviteToken: hashedToken,
       inviteTokenExpires: invitation.inviteTokenExpires,
       role: 'researcher',
+      invitationStatus: 'pending',
       isActive: false,
     });
 
@@ -145,22 +147,23 @@ deleteResearcher = asyncHandler(async (req, res) => {
   });
 
   // Get all invitations
-  getInvitations = asyncHandler(async (req, res) => {
-    const invitations = await User.find({
-      role: 'researcher',
-      inviteToken: { $exists: true },
-      inviteTokenExpires: { $exists: true },
-    }).select('_id email inviteTokenExpires createdAt');
-
+  getInvitations = asyncHandler(async (req, res) => {const invitations = await User.find({
+    role: 'researcher',
+    inviteToken: { $exists: true },
+    invitationStatus: { $in: ['pending', 'expired', 'accepted'] }
+  }).select('_id email inviteTokenExpires createdAt invitationStatus');
+  
     // Format the invitations to match frontend expectations
     const formattedInvitations = invitations.map(invitation => {
-      const now = new Date();
-      const expired = invitation.inviteTokenExpires < now;
+      if (invitation.invitationStatus === 'pending' && invitation.inviteTokenExpires < new Date()) {
+      User.findByIdAndUpdate(invitation._id, { invitationStatus: 'expired' }).exec();
+      invitation.invitationStatus = 'expired';
+    }
       
       return {
         id: invitation._id,
         email: invitation.email,
-        status: expired ? 'expired' : 'pending',
+        status: invitation.invitationStatus,
         created: invitation.createdAt.toISOString().split('T')[0],
         expires: invitation.inviteTokenExpires.toISOString().split('T')[0]
       };
@@ -191,6 +194,7 @@ deleteResearcher = asyncHandler(async (req, res) => {
     // Update invitation
     user.inviteToken = hashedToken;
     user.inviteTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    invitationStatus = 'pending'
     await user.save();
 
     logger.info(`Invitation resent for email: ${user.email}`);
