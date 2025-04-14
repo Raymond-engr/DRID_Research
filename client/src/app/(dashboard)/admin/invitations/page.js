@@ -1,4 +1,3 @@
-// app/(dashboard)/admin/invitations/page.js
 "use client";
 
 import { useState, useEffect } from "react";
