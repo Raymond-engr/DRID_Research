@@ -1,151 +1,93 @@
-"use client";
-
-import { useContext, useState } from "react";
-import { useRouter } from "next/navigation";
-import { AuthContext } from "@/lib/auth";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { z } from "zod";
-
-// Define validation schema
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
-});
-
-export default function ResearcherLoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [validationErrors, setValidationErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const { researcherLogin } = useContext(AuthContext);
-  const router = useRouter();
-
-  const validateForm = () => {
-    try {
-      loginSchema.parse({ email, password });
-      setValidationErrors({});
-      return true;
-    } catch (error) {
-      const formattedErrors = {};
-      error.errors.forEach((err) => {
-        formattedErrors[err.path[0]] = err.message;
-      });
-      setValidationErrors(formattedErrors);
-      return false;
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-
-    // Validate form before submission
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const success = await researcherLogin(email, password);
-      if (success) {
-        router.push("/researcher");
-      } else {
-        setError("Login failed. Please check your credentials.");
-      }
-    } catch (error) {
-      // Display the exact error message from the server
-      setError(
-        error.response?.data?.message ||
-          error.message ||
-          "An unexpected error occurred"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            Researcher Login
-          </CardTitle>
-          <CardDescription className="text-center">
-            Enter your credentials to access your researcher dashboard
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="researcher@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={validationErrors.email ? "border-red-500" : ""}
-                required
-              />
-              {validationErrors.email && (
-                <p className="text-sm text-red-500">{validationErrors.email}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={validationErrors.password ? "border-red-500" : ""}
-                required
-              />
-              {validationErrors.password && (
-                <p className="text-sm text-red-500">
-                  {validationErrors.password}
-                </p>
-              )}
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4 justify-center">
-          <p className="text-sm text-muted-foreground">
-            Research Portal for Lecturers and Researchers
-          </p>
-          <p className="text-xs text-center">
-            If you received an invitation but haven&apos;t registered yet,
-            please use the link in your email.
-          </p>
-        </CardFooter>
-      </Card>
-    </div>
-  );
-}
+import nodemailer from 'nodemailer'; 
+import logger from '../utils/logger.js'; 
+import { BadRequestError } from '../utils/customErrors.js'; 
+ 
+class EmailService { 
+  constructor() { 
+    this.transporter = nodemailer.createTransport({ 
+      host: process.env.SMTP_HOST, 
+      port: parseInt(process.env.SMTP_PORT || '587'), 
+      secure: process.env.SMTP_SECURE === 'true', 
+      auth: { 
+        user: process.env.SMTP_USER, 
+        pass: process.env.SMTP_PASS, 
+      }, 
+    }); 
+ 
+    this.frontendUrl = process.env.FRONTEND_URL; 
+    this.emailFrom = process.env.EMAIL_FROM; 
+ 
+    if (!this.frontendUrl || !this.emailFrom) { 
+      throw new Error( 
+        'FRONTEND_URL and EMAIL_FROM must be defined in environment variables' 
+      ); 
+    } 
+  } 
+ 
+  async sendInvitationEmail(email, token) { 
+    const inviteUrl = ${this.frontendUrl}/researcher-register/${token}; 
+ 
+    try { 
+      await this.transporter.sendMail({ 
+        from: this.emailFrom, 
+        to: email, 
+        subject: 'Invitation to join the Research Portal', 
+        html:  
+          <h1>Research Portal Invitation</h1> 
+          <p>You have been invited to join our research portal as a contributor.</p> 
+          <p>Please click the link below to complete your profile:</p> 
+          <a href="${inviteUrl}">${inviteUrl}</a> 
+          <p>This link will expire in 30 days.</p> 
+        , 
+      }); 
+      logger.info('Invitation mail sent successfully') 
+    } catch (error) { 
+      logger.error('Email error details:', error); 
+      throw new BadRequestError('Failed to send invitation email'); 
+    } 
+  } 
+ 
+  async sendCredentialsEmail(email, password) { 
+    const loginUrl = ${this.frontendUrl}/researcher-login; 
+ 
+    try { 
+      await this.transporter.sendMail({ 
+        from: this.emailFrom, 
+        to: email, 
+        subject: 'Your Research Portal Account Credentials', 
+        html:  
+          <h1>Research Portal Account Created</h1> 
+          <p>Your account has been created successfully. Please use the following credentials to log in:</p> 
+          <p><strong>Email:</strong> ${email}</p> 
+          <p><strong>Password:</strong> ${password}</p> 
+          <p>Please click the link below to log in to your account:</p> 
+          <a href="${loginUrl}">${loginUrl}</a> 
+          <p>If you didn't request this account, please contact our support team.</p> 
+        , 
+      }); 
+    } catch (error) { 
+      throw new BadRequestError('Failed to send credentials email'); 
+    } 
+  } 
+ 
+  async sendNotificationEmail(email, researcher, articleTitle) { 
+    try { 
+      await this.transporter.sendMail({ 
+        from: this.emailFrom, 
+        to: email, 
+        subject: New Research Published by ${researcher}, 
+        html:  
+          <h1>New Research Publication</h1> 
+          <p>${researcher} has published a new article: "${articleTitle}"</p> 
+          <p>Visit our research portal to read the full article.</p> 
+          <a href="${this.frontendUrl}">Visit Research Portal</a> 
+        , 
+      }); 
+    } catch (error) { 
+      logger.error('Failed to send notification email:', error); 
+      // Don't throw error here to prevent article publication from failing 
+    } 
+  } 
+} 
+ 
+export default new EmailService();

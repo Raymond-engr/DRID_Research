@@ -1,4 +1,3 @@
-// app/(dashboard)/admin/layout.js
 "use client";
 
 import { useContext, useState, useEffect } from "react";
@@ -20,6 +19,7 @@ import {
 export default function AdminDashboardLayout({ children }) {
   const { user, logout, isAdmin, loading } = useContext(AuthContext);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -49,8 +49,19 @@ export default function AdminDashboardLayout({ children }) {
   ];
 
   const handleLogout = async () => {
-    await logout();
-    router.push("/admin-login");
+    try {
+      setIsLoggingOut(true);
+      // Wait for the logout process to complete
+      // This will make API call to backend and clear local tokens
+      await logout();
+      // Router push to login page is handled inside the logout function
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // In case of error, try to redirect anyway
+      router.push("/admin-login");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -105,9 +116,14 @@ export default function AdminDashboardLayout({ children }) {
               variant="ghost"
               className="flex items-center w-full text-sm font-medium text-gray-700"
               onClick={handleLogout}
+              disabled={isLoggingOut}
             >
-              <LogOut className="mr-3 h-5 w-5 text-gray-400" />
-              Logout
+              {isLoggingOut ? (
+                <div className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-t-blue-500"></div>
+              ) : (
+                <LogOut className="mr-3 h-5 w-5 text-gray-400" />
+              )}
+              {isLoggingOut ? "Logging out..." : "Logout"}
             </Button>
           </div>
         </div>
@@ -152,9 +168,14 @@ export default function AdminDashboardLayout({ children }) {
                 variant="ghost"
                 className="flex items-center w-full text-sm font-medium text-gray-700"
                 onClick={handleLogout}
+                disabled={isLoggingOut}
               >
-                <LogOut className="mr-3 h-5 w-5 text-gray-400" />
-                Logout
+                {isLoggingOut ? (
+                  <div className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-t-blue-500"></div>
+                ) : (
+                  <LogOut className="mr-3 h-5 w-5 text-gray-400" />
+                )}
+                {isLoggingOut ? "Logging out..." : "Logout"}
               </Button>
             </div>
           </div>
