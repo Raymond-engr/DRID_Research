@@ -41,7 +41,7 @@ const Header = () => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link href="/" className="text-gray-800 hover:text-gray-400">
+                  <Link href="/" className="hover:text-gray-400">
                     HOME
                   </Link>
                 </TooltipTrigger>
@@ -55,10 +55,7 @@ const Header = () => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link
-                    href="/about"
-                    className="text-gray-800 hover:text-gray-400"
-                  >
+                  <Link href="/about" className="hover:text-gray-400">
                     ABOUT US
                   </Link>
                 </TooltipTrigger>
@@ -72,10 +69,7 @@ const Header = () => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link
-                    href="/research"
-                    className="text-gray-800 hover:text-gray-400"
-                  >
+                  <Link href="/research" className="hover:text-gray-400">
                     RESEARCH
                   </Link>
                 </TooltipTrigger>
@@ -89,10 +83,7 @@ const Header = () => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link
-                    href="/innovation"
-                    className="text-gray-800 hover:text-gray-400"
-                  >
+                  <Link href="/innovation" className="hover:text-gray-400">
                     INNOVATION
                   </Link>
                 </TooltipTrigger>
@@ -106,10 +97,7 @@ const Header = () => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link
-                    href="/development"
-                    className="text-gray-800 hover:text-gray-400"
-                  >
+                  <Link href="/development" className="hover:text-gray-400">
                     DEVELOPMENT
                   </Link>
                 </TooltipTrigger>
