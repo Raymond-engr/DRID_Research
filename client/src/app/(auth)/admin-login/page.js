@@ -19,7 +19,12 @@ import { z } from "zod";
 
 // Define validation schema
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z
+    .string()
+    .email("Invalid email address")
+    .refine((val) => val.includes("."), {
+      message: "Email must include a domain extension (e.g., .com)",
+    }),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -59,14 +64,9 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      const success = await adminLogin(email, password);
-      if (success) {
-        router.push("/admin");
-      } else {
-        setError("Login failed. Please check your credentials.");
-      }
+      await adminLogin(email, password);
+      router.push("/admin");
     } catch (error) {
-      // Display the exact error message from the server
       setError(
         error.response?.data?.message ||
           error.message ||

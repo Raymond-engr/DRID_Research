@@ -126,8 +126,7 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error("Admin login failed:", error);
-      setError(error.message || "Login failed");
-      return false;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -148,8 +147,7 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error("Researcher login failed:", error);
-      setError(error.message || "Login failed");
-      return false;
+      throw error;
     } finally {
       setLoading(false);
     }
