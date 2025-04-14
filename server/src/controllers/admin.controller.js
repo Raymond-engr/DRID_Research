@@ -32,7 +32,7 @@ class AdminController {
       email,
       inviteToken: hashedToken,
       inviteTokenExpires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      invitationStatus: 'pending'
+      invitationStatus: 'pending',
     };
 
     // Save invitation to database
@@ -62,12 +62,16 @@ class AdminController {
     const { email, name, faculty, bio, title } = req.body;
     const profilePicture = req.file ? req.file.path : null;
 
-    logger.info(`Manual researcher profile creation request for email: ${email}`);
+    logger.info(
+      `Manual researcher profile creation request for email: ${email}`
+    );
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      logger.warn(`Attempt to create profile for already registered email: ${email}`);
+      logger.warn(
+        `Attempt to create profile for already registered email: ${email}`
+      );
       throw new BadRequestError('Email already registered');
     }
 
@@ -95,7 +99,8 @@ class AdminController {
 
     res.status(201).json({
       success: true,
-      message: 'Researcher profile created successfully. Login credentials have been sent to their email.',
+      message:
+        'Researcher profile created successfully. Login credentials have been sent to their email.',
       data: {
         id: newUser._id,
         email: newUser.email,
@@ -106,39 +111,41 @@ class AdminController {
     });
   });
 
-// Delete a researcher profile
-deleteResearcher = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  
-  logger.info(`Researcher deletion request for ID: ${id}`);
-  
-  const researcher = await User.findById(id);
-  
-  if (!researcher) {
-    logger.warn(`Attempt to delete non-existent researcher with ID: ${id}`);
-    throw new NotFoundError('Researcher not found');
-  }
-  
-  if (researcher.role !== 'researcher') {
-    logger.warn(`Attempt to delete non-researcher account with ID: ${id}`);
-    throw new BadRequestError('Can only delete researcher accounts');
-  }
-  
-  await User.findByIdAndDelete(id);
-  logger.info(`Researcher profile deleted for: ${researcher.email}`);
-  
-  res.status(200).json({
-    success: true,
-    message: 'Researcher profile deleted successfully',
+  // Delete a researcher profile
+  deleteResearcher = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    logger.info(`Researcher deletion request for ID: ${id}`);
+
+    const researcher = await User.findById(id);
+
+    if (!researcher) {
+      logger.warn(`Attempt to delete non-existent researcher with ID: ${id}`);
+      throw new NotFoundError('Researcher not found');
+    }
+
+    if (researcher.role !== 'researcher') {
+      logger.warn(`Attempt to delete non-researcher account with ID: ${id}`);
+      throw new BadRequestError('Can only delete researcher accounts');
+    }
+
+    await User.findByIdAndDelete(id);
+    logger.info(`Researcher profile deleted for: ${researcher.email}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Researcher profile deleted successfully',
+    });
   });
-});
 
   // Get all researchers
   getResearchers = asyncHandler(async (req, res) => {
-    const researchers = await User.find({ 
+    const researchers = await User.find({
       role: 'researcher',
-      isActive: true 
-    }).select('_id name email faculty title profilePicture createdAt lastLogin');
+      isActive: true,
+    }).select(
+      '_id name email faculty title profilePicture createdAt lastLogin'
+    );
 
     res.status(200).json({
       success: true,
@@ -147,27 +154,30 @@ deleteResearcher = asyncHandler(async (req, res) => {
   });
 
   // Get all invitations
-  getInvitations = asyncHandler(async (req, res) => {const invitations = await User.find({
-    role: 'researcher',
-    inviteToken: { $exists: true },
-    invitationStatus: { $in: ['pending', 'expired', 'accepted'] }
-  }).select('_id email inviteTokenExpires createdAt invitationStatus');
-  
-    // Format the invitations to match frontend expectations
-    const formattedInvitations = invitations.map(invitation => {
-      if (invitation.invitationStatus === 'pending' && invitation.inviteTokenExpires < new Date()) {
-      User.findByIdAndUpdate(invitation._id, { invitationStatus: 'expired' }).exec();
-      invitation.invitationStatus = 'expired';
-    }
-      
-      return {
-        id: invitation._id,
-        email: invitation.email,
-        status: invitation.invitationStatus,
-        created: invitation.createdAt.toISOString().split('T')[0],
-        expires: invitation.inviteTokenExpires.toISOString().split('T')[0]
-      };
-    });
+  getInvitations = asyncHandler(async (req, res) => {
+    await User.updateMany(
+      {
+        role: 'researcher',
+        invitationStatus: 'pending',
+        inviteTokenExpires: { $lt: new Date() },
+      },
+      { invitationStatus: 'expired' }
+    );
+
+    const invitations = await User.find({
+      role: 'researcher',
+      invitationStatus: { $in: ['pending', 'expired', 'accepted'] },
+    }).select('_id email inviteTokenExpires createdAt invitationStatus');
+
+    const formattedInvitations = invitations.map((invitation) => ({
+      id: invitation._id,
+      email: invitation.email,
+      status: invitation.invitationStatus,
+      created: invitation.createdAt.toISOString().split('T')[0],
+      expires: invitation.inviteTokenExpires
+        ? invitation.inviteTokenExpires.toISOString().split('T')[0]
+        : null,
+    }));
 
     res.status(200).json({
       success: true,
@@ -194,7 +204,7 @@ deleteResearcher = asyncHandler(async (req, res) => {
     // Update invitation
     user.inviteToken = hashedToken;
     user.inviteTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
-    invitationStatus = 'pending'
+    user.invitationStatus = 'pending';
     await user.save();
 
     logger.info(`Invitation resent for email: ${user.email}`);

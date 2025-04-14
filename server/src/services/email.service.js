@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import logger from '../utils/logger.js';
 import { BadRequestError } from '../utils/customErrors.js';
 
 class EmailService {
@@ -36,10 +37,12 @@ class EmailService {
           <p>You have been invited to join our research portal as a contributor.</p>
           <p>Please click the link below to complete your profile:</p>
           <a href="${inviteUrl}">${inviteUrl}</a>
-          <p>This link will expire in 24 hours.</p>
+          <p>This link will expire in 30 days.</p>
         `,
       });
+      logger.info('Invitation mail sent successfully');
     } catch (error) {
+      logger.error('Email error details:', error);
       throw new BadRequestError('Failed to send invitation email');
     }
   }

@@ -43,8 +43,8 @@ class AuthController {
     user.profilePicture = profilePicture;
     user.password = generatedPassword;
     user.isActive = true;
-    invitationStatus = 'accepted'
-
+    user.invitationStatus = 'accepted';
+    user.inviteToken = undefined;
 
     await user.save();
     logger.info(`Profile completed for user: ${user.email}`);
