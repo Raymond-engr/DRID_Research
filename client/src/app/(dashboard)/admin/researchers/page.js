@@ -44,10 +44,9 @@ const getImageUrl = (profilePicture) => {
 
   // In development
   if (process.env.NODE_ENV === "development") {
-    return `http://localhost:3001/uploads/profiles/${fileName}`;
+    return `http://localhost:3000/uploads/profiles/${fileName}`;
   }
 
-  // In production - use your actual API domain
   return `https://your-api-domain.com/uploads/profiles/${fileName}`;
 };
 
