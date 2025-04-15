@@ -29,6 +29,28 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+// Helper function to convert file paths to proper URLs
+const getImageUrl = (profilePicture) => {
+  if (!profilePicture) return null;
+
+  // If it's already a URL that starts with http, return as is
+  if (profilePicture.startsWith("http")) {
+    return profilePicture;
+  }
+
+  // If it's a file path, convert it to a URL
+  // Extract just the filename from the path
+  const fileName = profilePicture.split("\\").pop().split("/").pop();
+
+  // In development
+  if (process.env.NODE_ENV === "development") {
+    return `http://localhost:3001/uploads/profiles/${fileName}`;
+  }
+
+  // In production - use your actual API domain
+  return `https://your-api-domain.com/uploads/profiles/${fileName}`;
+};
+
 function ResearchersPage() {
   const [researchers, setResearchers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -160,7 +182,7 @@ function ResearchersPage() {
                     {researcher.profilePicture ? (
                       <div className="relative h-40 w-full">
                         <Image
-                          src={`${researcher.profilePicture}`}
+                          src={getImageUrl(researcher.profilePicture)}
                           alt={`${researcher.name}'s profile`}
                           fill
                           sizes="100%"
