@@ -12,7 +12,9 @@ class AuthController {
   completeProfile = asyncHandler(async (req, res) => {
     const { token } = req.params;
     const { name, faculty, bio, title } = req.body;
-    const profilePicture = req.file ? req.file.path : null;
+    const profilePicture = req.file
+      ? `http://localhost:3000/uploads/profiles/${req.file.filename}`
+      : null;
 
     logger.info(
       `Profile completion attempt with token: ${token.substring(0, 8)}...`
