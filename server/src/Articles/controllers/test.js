@@ -1,11 +1,11 @@
 import fs from 'fs';
-import path from 'path';
 import Faculty from '../models/faculty.model.js';
 import Department from '../models/department.model.js';
 import mongoose from 'mongoose';
 import Article from '../models/article.model.js';
-import User from '../../model/user.model.js';
 import logger from '../../utils/logger.js';
+import User from '../../model/user.model.js';
+import path from 'path';
 
 class ArticleController {
   getArticles = async (req, res) => {
@@ -22,7 +22,7 @@ class ArticleController {
 
       res.json(articles);
     } catch (err) {
-      logger.error(`Error retrieving articles: ${err.message}`);
+      console.error(err.message);
       res.status(500).send('Server Error');
     }
   };
@@ -49,10 +49,7 @@ class ArticleController {
 
       res.json(article);
     } catch (err) {
-      logger.error(
-        `Error retrieving article by ID ${req.params.id}: ${err.message}`,
-        { stack: err.stack }
-      );
+      logger.error(`Error retrieving article by ID: ${err.message}`);
       res.status(500).send('Server Error');
     }
   };
@@ -65,14 +62,12 @@ class ArticleController {
       // Check if faculty exists
       const facultyExists = await Faculty.findOne({ code: faculty });
       if (!facultyExists) {
-        logger.warn(`Faculty not found with code: ${faculty}`);
         return res.status(404).json({ msg: 'Faculty not found' });
       }
 
       // Check if department exists
       const departmentExists = await Department.findOne({ code: department });
       if (!departmentExists) {
-        logger.warn(`Department not found with code: ${department}`);
         return res.status(404).json({ msg: 'Department not found' });
       }
 
@@ -95,7 +90,6 @@ class ArticleController {
         });
 
         if (contributorIds.length !== validContributors.length) {
-          logger.warn('One or more contributors are invalid');
           return res
             .status(400)
             .json({ msg: 'One or more contributors are invalid' });
@@ -107,14 +101,14 @@ class ArticleController {
         title,
         category,
         content,
-        faculty: facultyExists._id,
-        department: departmentExists._id,
+        faculty,
+        department,
         owner: req.user.id,
       });
 
       // Handle file upload
       article.cover_photo = req.file
-        ? `${process.env.API_URL || 'http://localhost:3000'}/uploads/cover_pic/${req.file.filename}`
+        ? `http://localhost:3000/uploads/cover_pic/${req.file.filename}`
         : null;
 
       // Save article first
@@ -128,12 +122,9 @@ class ArticleController {
         await article.save();
       }
 
-      logger.info(`Article created successfully: ${article._id}`);
       res.json(article);
     } catch (err) {
-      logger.error(`Error creating article: ${err.message}`, {
-        stack: err.stack,
-      });
+      console.error(err.message);
       res.status(500).send('Server Error');
     }
   };
@@ -175,9 +166,7 @@ class ArticleController {
         query,
       });
     } catch (err) {
-      logger.error(`Error retrieving dashboard data: ${err.message}`, {
-        stack: err.stack,
-      });
+      console.error(err.message);
       res.status(500).send('Server Error');
     }
   };
@@ -215,9 +204,8 @@ class ArticleController {
         const facultyExists = await Faculty.findOne({ code: faculty });
         if (!facultyExists) {
           logger.warn(`Invalid faculty code in update: ${faculty}`);
-          return res.status(404).json({ msg: 'Faculty not found' });
+          return res.status(404).json({ msg: 'faculty not found' });
         }
-        article.faculty = facultyExists._id;
       }
 
       // Check if department exists if provided
@@ -227,7 +215,6 @@ class ArticleController {
           logger.warn(`Invalid department code in update: ${department}`);
           return res.status(404).json({ msg: 'Department not found' });
         }
-        article.department = departmentExists._id;
       }
 
       // Verify contributors if provided
@@ -263,6 +250,8 @@ class ArticleController {
       if (title) article.title = title;
       if (category) article.category = category;
       if (content) article.content = content;
+      if (faculty) article.faculty = faculty;
+      if (department) article.department = department;
 
       // Handle file upload
       if (req.file) {
@@ -271,10 +260,7 @@ class ArticleController {
           const oldFilePath = path.join(
             __dirname,
             '../../',
-            article.cover_photo.replace(
-              process.env.API_URL || 'http://localhost:3000',
-              ''
-            )
+            article.cover_photo
           );
           try {
             if (fs.existsSync(oldFilePath)) {
@@ -284,7 +270,9 @@ class ArticleController {
             logger.error(`Error deleting old cover photo: ${err.message}`);
           }
         }
-        article.cover_photo = `${process.env.API_URL || 'http://localhost:3000'}/uploads/cover_pic/${req.file.filename}`;
+        article.cover_photo = req.file
+          ? `http://localhost:3000/uploads/cover_pic/${req.file.filename}`
+          : null;
       }
 
       await article.save();
@@ -292,9 +280,7 @@ class ArticleController {
 
       res.json(article);
     } catch (err) {
-      logger.error(`Error updating article ${req.params.id}: ${err.message}`, {
-        stack: err.stack,
-      });
+      logger.error(`Error updating article: ${err.message}`);
       res.status(500).send('Server Error');
     }
   };
@@ -327,14 +313,7 @@ class ArticleController {
 
       // Delete cover photo file if exists
       if (article.cover_photo) {
-        const filePath = path.join(
-          __dirname,
-          '../../',
-          article.cover_photo.replace(
-            process.env.API_URL || 'http://localhost:3000',
-            ''
-          )
-        );
+        const filePath = path.join(__dirname, '../../', article.cover_photo);
         try {
           if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
@@ -349,9 +328,7 @@ class ArticleController {
 
       res.json({ msg: 'Article removed' });
     } catch (err) {
-      logger.error(`Error deleting article ${req.params.id}: ${err.message}`, {
-        stack: err.stack,
-      });
+      logger.error(`Error deleting article: ${err.message}`);
       res.status(500).send('Server Error');
     }
   };

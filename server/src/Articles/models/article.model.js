@@ -6,6 +6,7 @@ const ArticleSchema = new mongoose.Schema(
       type: String,
       required: true,
       maxlength: 255,
+      trim: true,
     },
     category: {
       type: String,
@@ -15,7 +16,7 @@ const ArticleSchema = new mongoose.Schema(
     content: {
       type: String,
       required: true,
-      maxlength: 500,
+      maxlength: 10000, // Increased from 500 to 50000 to accommodate research article content
     },
     cover_photo: {
       type: String,
@@ -24,16 +25,16 @@ const ArticleSchema = new mongoose.Schema(
     contributors: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Changed from 'Contributor' to 'User' for consistency
+        ref: 'User',
       },
     ],
     faculty: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId, // Changed to ObjectId from String
       ref: 'Faculty',
       required: true,
     },
     department: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId, // Changed to ObjectId from String
       ref: 'Department',
       required: true,
     },
@@ -63,13 +64,23 @@ const ArticleSchema = new mongoose.Schema(
         },
       ],
     },
+    tags: [String], // Adding tags for better searchability
+    status: {
+      type: String,
+      enum: ['draft', 'published', 'archived'],
+      default: 'published',
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Add an index for faster retrieval of popular articles
+// Add indexes for faster queries
 ArticleSchema.index({ 'views.count': -1 });
+ArticleSchema.index({ title: 'text', content: 'text', tags: 'text' });
+ArticleSchema.index({ category: 1 });
+ArticleSchema.index({ faculty: 1, department: 1 });
+ArticleSchema.index({ publish_date: -1 });
 
 export default mongoose.model('Article', ArticleSchema);
