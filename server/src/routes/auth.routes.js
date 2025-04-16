@@ -1,7 +1,6 @@
 import express from 'express';
 import authController from '../controllers/auth.controller.js';
 import {
-  authenticateAdminToken,
   authenticateToken,
   rateLimiter,
 } from '../middleware/auth.middleware.js';
