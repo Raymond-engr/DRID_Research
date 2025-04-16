@@ -27,8 +27,13 @@ const ArticleSchema = new mongoose.Schema(
         ref: 'Contributor',
       },
     ],
+    faculty: {
+      type: String,
+      ref: 'Faculty',
+      required: true,
+    },
     department: {
-      type: String, // Using the code as reference
+      type: String,
       ref: 'Department',
       required: true,
     },
@@ -47,4 +52,4 @@ const ArticleSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Article', ArticleSchema);
+export default mongoose.model('Article', ArticleSchema);

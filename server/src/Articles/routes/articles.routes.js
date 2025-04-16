@@ -1,10 +1,11 @@
 import express from 'express';
-import adminController from '../controllers/admin.controller.js';
-import { authenticateAdminToken } from '../middleware/auth.middleware.js';
+import articleController from '../controllers/article.controller.js';
+import { authenticateAdminToken } from '../../middleware/auth.middleware.js';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import logger from '../../utils/logger.js';
 
 const router = express.Router();
 
@@ -13,7 +14,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../uploads/cover_pic/'));
+    const uploadPath = path.join(__dirname, '../../uploads/cover_pic/');
+    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     cb(null, `${Date.now()}-${path.basename(file.originalname)}`);
@@ -36,6 +38,26 @@ const upload = multer({
   },
 });
 
+// Public routes
+router.get('/', articleController.getArticles);
+router.get('/:id', articleController.getArticleById);
+router.get('/dashboard', articleController.getDashboardData);
+
+// Protected routes - require authentication
 router.post(
+  '/',
+  authenticateAdminToken,
+  upload.single('cover_photo'),
+  articleController.createArticle
+);
+
+router.put(
+  '/:id',
+  authenticateAdminToken,
+  upload.single('cover_photo'),
+  articleController.updateArticle
+);
+
+router.delete('/:id', authenticateAdminToken, articleController.deleteArticle);
 
 export default router;

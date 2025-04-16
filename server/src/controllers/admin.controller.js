@@ -60,7 +60,9 @@ class AdminController {
   // Add a researcher profile manually (without invitation)
   addResearcherProfile = asyncHandler(async (req, res) => {
     const { email, name, faculty, bio, title } = req.body;
-    const profilePicture = req.file ? req.file.path : null;
+    const profilePicture = req.file
+      ? `http://localhost:3000/uploads/profiles/${req.file.filename}`
+      : null;
 
     logger.info(
       `Manual researcher profile creation request for email: ${email}`
