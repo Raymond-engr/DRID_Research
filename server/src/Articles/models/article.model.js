@@ -24,7 +24,7 @@ const ArticleSchema = new mongoose.Schema(
     contributors: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Contributor',
+        ref: 'User', // Changed from 'Contributor' to 'User' for consistency
       },
     ],
     faculty: {
@@ -46,10 +46,30 @@ const ArticleSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // Adding view tracking
+    views: {
+      count: {
+        type: Number,
+        default: 0,
+      },
+      // To track unique viewers by IP address or session ID
+      viewers: [
+        {
+          identifier: String, // IP address or session ID
+          timestamp: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Add an index for faster retrieval of popular articles
+ArticleSchema.index({ 'views.count': -1 });
 
 export default mongoose.model('Article', ArticleSchema);

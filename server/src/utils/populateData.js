@@ -1,4 +1,3 @@
-// utils/populateData.js
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -29,13 +28,16 @@ async function populateFacultiesAndDepartments() {
       if (
         !line.trim() ||
         line.startsWith('Academic Section') ||
-        line.startsWith('Faculties')
+        line.startsWith('Faculties') ||
+        line.startsWith('Code Title')
       ) {
         continue;
       }
 
-      // Check for faculty line
-      const facultyMatch = line.match(/^([A-Z]+)\s+(.+)$/);
+      // Check for faculty line (pattern: CODE Faculty of Something (CODE))
+      const facultyMatch = line.match(
+        /^([A-Z]+)\s+(Faculty of .+|School of .+|Institute of .+|Centre .+|College of .+)\s*(\([A-Z]+\))?$/
+      );
       if (facultyMatch) {
         const code = facultyMatch[1];
         const title = facultyMatch[2];
@@ -44,11 +46,21 @@ async function populateFacultiesAndDepartments() {
         continue;
       }
 
-      // Check for department line
-      const deptMatch = line.match(/^([A-Z]+)\s+(.+)\s+\(([A-Z]+)\)$/);
+      // Alternative faculty match for non-standard formats
+      const altFacultyMatch = line.match(/^([A-Z_]+)\s+([^(]+)$/);
+      if (altFacultyMatch && !line.includes('Department of')) {
+        const code = altFacultyMatch[1];
+        const title = altFacultyMatch[2].trim();
+        currentFaculty = { code, title };
+        faculties.set(code, title);
+        continue;
+      }
+
+      // Check for department line (pattern: CODE Department of Something (CODE))
+      const deptMatch = line.match(/^([A-Z_]+)\s+(.+)\s+\(([A-Z_]+)\)$/);
       if (deptMatch && currentFaculty) {
         const deptCode = deptMatch[3];
-        const deptTitle = deptMatch[2];
+        const deptTitle = deptMatch[2].trim();
         const facultyCode = currentFaculty.code;
 
         departments.push({
@@ -58,6 +70,10 @@ async function populateFacultiesAndDepartments() {
         });
       }
     }
+
+    // Clear existing data before inserting new data
+    await Faculty.deleteMany({});
+    await Department.deleteMany({});
 
     // Save faculties to database
     for (const [code, title] of faculties.entries()) {

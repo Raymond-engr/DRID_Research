@@ -3,7 +3,6 @@ import Faculty from '../models/faculty.model.js';
 import Department from '../models/department.model.js';
 import mongoose from 'mongoose';
 import Article from '../models/article.model.js';
-import { NotFoundError } from './utils/customErrors.js';
 import logger from './utils/logger.js';
 
 class ArticleController {
@@ -29,6 +28,7 @@ class ArticleController {
   getArticleById = async (req, res) => {
     try {
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        logger.warn(`Invalid article ID format: ${req.params.id}`);
         return res.status(404).json({ msg: 'Article not found' });
       }
 
@@ -38,12 +38,16 @@ class ArticleController {
         .populate('owner', 'username email');
 
       if (!article) {
+        logger.warn(`Article not found with ID: ${req.params.id}`);
         return res.status(404).json({ msg: 'Article not found' });
       }
 
+      // Don't increment the view counter here, as we're handling it separately
+      // in the ArticleViewController to avoid double counting
+
       res.json(article);
     } catch (err) {
-      console.error(err.message);
+      logger.error(`Error retrieving article by ID: ${err.message}`);
       res.status(500).send('Server Error');
     }
   };
