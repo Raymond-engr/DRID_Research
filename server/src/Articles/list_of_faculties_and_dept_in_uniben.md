@@ -84,7 +84,6 @@ COEMPGD College of Education Mosogar PGD (COEMPGD) (COEMPGD)
 SOASS School of Arts and Social Sciences (SOASS)
 SOEDU School of Education (SOEDU)
 SOSCN School of Sciences (SOSCN)
-SOVOC School of Vocation (SOVOC)
 
 DEN Faculty of Dentistry (DEN)
 DPV Department of Preventive Dentistry (DPV)
@@ -158,12 +157,9 @@ ICH Institute of Child Health (ICH)
 CH Institute of Child Health (CH)
 
 ICSAN Institute of Chartered Secretaries and Administrators of Nigeria (ICSAN)
-ICSAN Institute of Chartered Secretaries and Administrators of Nigeria (ICSAN)
 
 INE Institute of Education (INE)
-INE Institute of Education (INE)
 
-INP Institute of Public Administration and Health Services Management (IPAHSM) (INP)
 INP Institute of Public Administration and Health Services Management (IPAHSM) (INP)
 
 JUPEB Joint Universities Preliminary Examinations Board (JUPEB)
