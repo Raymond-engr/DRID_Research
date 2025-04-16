@@ -30,7 +30,9 @@ class ArticleController {
   getArticleById = async (req, res) => {
     try {
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        logger.warn(`Invalid article ID format: ${req.params.id}`);
+        logger.warn(
+          `Invalid article ID format: ${req.params.id} for getArticleById method`
+        );
         return res.status(404).json({ msg: 'Article not found' });
       }
 
@@ -186,7 +188,9 @@ class ArticleController {
   updateArticle = async (req, res) => {
     try {
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        logger.warn(`Invalid article ID format: ${req.params.id}`);
+        logger.warn(
+          `Invalid article ID format: ${req.params.id} for updateArticle method`
+        );
         return res.status(404).json({ msg: 'Article not found' });
       }
 
@@ -303,7 +307,9 @@ class ArticleController {
   deleteArticle = async (req, res) => {
     try {
       if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        logger.warn(`Invalid article ID format: ${req.params.id}`);
+        logger.warn(
+          `Invalid article ID format: ${req.params.id} for deleteArticle method`
+        );
         return res.status(404).json({ msg: 'Article not found' });
       }
 

@@ -10,8 +10,10 @@ class ArticleViewController {
       const { id } = req.params;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        logger.warn(`Invalid article ID format: ${id}`);
-        throw new BadRequestError('Invalid article ID format');
+        logger.warn(`Invalid article ID format: ${id} for recordView method`);
+        throw new BadRequestError(
+          'Invalid article ID format for recordView method'
+        );
       }
 
       // Get visitor identifier (IP address or a session ID)
@@ -136,8 +138,12 @@ class ArticleViewController {
       const { id } = req.params;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        logger.warn(`Invalid article ID format: ${id}`);
-        throw new BadRequestError('Invalid article ID format');
+        logger.warn(
+          `Invalid article ID format: ${id} for getArticleViewStats method`
+        );
+        throw new BadRequestError(
+          'Invalid article ID format for getArticleViewStats method'
+        );
       }
 
       const article = await Article.findById(id);
