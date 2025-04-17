@@ -188,7 +188,6 @@ PSC_JUP_AK Physical Sciences-Subjects Combination (PSC_JUP) (PSC_JUP_AK)
 LAW Faculty of Law (LAW)
 BUL Department of Business Law (BUL)
 JIL Department of Jurisprudence and International Law (JIL)
-LAW Department of Law (LAW)
 PPL Department of Private and Property Law (PPL)
 PUL Department of Public Law (PUL)
 
