@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   FileText,
@@ -21,6 +22,8 @@ import {
 } from "@/lib/api";
 
 function AdminDashboardPage() {
+  const router = useRouter();
+
   const [stats, setStats] = useState({
     totalArticles: 0,
     totalResearchers: 0,
@@ -49,6 +52,8 @@ function AdminDashboardPage() {
         const researchers = await researchersApi.getResearchers();
         const popularArticles = await articleViewsApi.getPopularArticles(5);
 
+        const researchersCount = researchers?.data?.length || 0;
+
         // Calculate total views
         let totalViews = 0;
         if (dashboardData.recent_articles) {
@@ -61,7 +66,7 @@ function AdminDashboardPage() {
 
         setStats({
           totalArticles: dashboardData.recent_articles?.length || 0,
-          totalResearchers: researchers?.length || 0,
+          totalResearchers: researchersCount,
           totalViews: totalViews,
           categoryCounts: dashboardData.category_counts || {
             Research: 0,
@@ -142,7 +147,10 @@ function AdminDashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => router.push("/admin/articles")}
+        >
           <CardContent className="flex items-center justify-between p-6">
             <div>
               <p className="text-sm font-medium text-muted-foreground">
@@ -156,7 +164,10 @@ function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => router.push("/admin/researchers")}
+        >
           <CardContent className="flex items-center justify-between p-6">
             <div>
               <p className="text-sm font-medium text-muted-foreground">
