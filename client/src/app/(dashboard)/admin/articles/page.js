@@ -81,9 +81,9 @@ function AdminArticlesPage() {
         const departmentsData = await departmentApi.getDepartments();
 
         setArticles(articlesData);
-        setResearchers(researchersData);
-        setFaculties(facultiesData);
-        setDepartments(departmentsData);
+        setResearchers(researchersData.data);
+        setFaculties(facultiesData.data);
+        setDepartments(departmentsData.data);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load data. Please try again.");
@@ -240,11 +240,9 @@ function AdminArticlesPage() {
     return matchesSearch && matchesCategory;
   });
 
-  const filteredDepartments = Array.isArray(departments)
-    ? departments.filter(
-        (dept) => !formData.faculty || dept.faculty === formData.faculty
-      )
-    : [];
+  const filteredDepartments = departments.filter(
+    (dept) => !formData.faculty || dept.faculty === formData.faculty
+  );
 
   if (isLoading) {
     return (
