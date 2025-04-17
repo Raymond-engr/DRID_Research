@@ -84,7 +84,11 @@ function AdminDashboardPage() {
         setRecentArticles(formattedArticles);
 
         // Format popular articles
-        if (popularArticles && popularArticles.data) {
+        if (
+          popularArticles &&
+          popularArticles.data &&
+          Array.isArray(popularArticles.data)
+        ) {
           const formattedPopular = popularArticles.data.map((article) => ({
             id: article._id,
             title: article.title,
@@ -94,6 +98,8 @@ function AdminDashboardPage() {
           }));
 
           setPopularArticles(formattedPopular);
+        } else {
+          setPopularArticles([]);
         }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
