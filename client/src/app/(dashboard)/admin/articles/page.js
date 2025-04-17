@@ -97,8 +97,14 @@ function AdminArticlesPage() {
 
   // Calculate word count when content changes
   useEffect(() => {
-    const words = formData.content.trim().split(/\s+/).length;
-    setWordCount(formData.content.trim() === "" ? 0 : words);
+    if (formData.content) {
+      const words = formData.content.trim()
+        ? formData.content.trim().split(/\s+/).length
+        : 0;
+      setWordCount(words);
+    } else {
+      setWordCount(0);
+    }
   }, [formData.content]);
 
   const handleInputChange = (e) => {
@@ -133,9 +139,7 @@ function AdminArticlesPage() {
   };
 
   const handleContributorsChange = (value) => {
-    // Check if multiple selection is already an array
-    const contributorsList = Array.isArray(value) ? value : [value];
-    setFormData((prev) => ({ ...prev, contributors: contributorsList }));
+    setFormData((prev) => ({ ...prev, contributors: [value] }));
   };
 
   const resetForm = () => {
@@ -197,6 +201,7 @@ function AdminArticlesPage() {
         articleFormData.append("cover_photo", formData.cover_photo);
       }
 
+      console.log("Submitting form with faculty:", formData.faculty);
       const response = await articlesApi.createArticle(articleFormData);
 
       // Add new article to the list
@@ -345,12 +350,20 @@ function AdminArticlesPage() {
                     value={formData.faculty}
                     onValueChange={handleFacultyChange}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select faculty" />
+                    <SelectTrigger className="truncate">
+                      <SelectValue
+                        placeholder="Select faculty"
+                        className="truncate"
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {faculties.map((faculty) => (
-                        <SelectItem key={faculty._id} value={faculty.code}>
+                        <SelectItem
+                          key={faculty._id}
+                          value={faculty.code}
+                          className="truncate max-w-[300px]"
+                          title={faculty.title}
+                        >
                           {faculty.title}
                         </SelectItem>
                       ))}
@@ -365,13 +378,14 @@ function AdminArticlesPage() {
                     onValueChange={handleDepartmentChange}
                     disabled={!formData.faculty}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="truncate">
                       <SelectValue
                         placeholder={
                           formData.faculty
-                            ? "Select department"
+                            ? "Select depart"
                             : "Select faculty first"
                         }
+                        className="truncate"
                       />
                     </SelectTrigger>
                     <SelectContent>
@@ -379,6 +393,8 @@ function AdminArticlesPage() {
                         <SelectItem
                           key={department._id}
                           value={department.code}
+                          className="truncate max-w-[300px]"
+                          title={department.title}
                         >
                           {department.title}
                         </SelectItem>
