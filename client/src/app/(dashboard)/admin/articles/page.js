@@ -240,9 +240,11 @@ function AdminArticlesPage() {
     return matchesSearch && matchesCategory;
   });
 
-  const filteredDepartments = departments.filter(
-    (dept) => !formData.faculty || dept.faculty === formData.faculty
-  );
+  const filteredDepartments = Array.isArray(departments)
+    ? departments.filter(
+        (dept) => !formData.faculty || dept.faculty === formData.faculty
+      )
+    : [];
 
   if (isLoading) {
     return (
