@@ -40,8 +40,8 @@ const upload = multer({
 
 // Public routes
 router.get('/', articleController.getArticles);
-router.get('/:id', articleController.getArticleById);
 router.get('/dashboard', articleController.getDashboardData);
+router.get('/:id', articleController.getArticleById);
 
 // Protected routes - require authentication
 router.post(
