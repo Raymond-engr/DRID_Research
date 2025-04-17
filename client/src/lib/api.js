@@ -135,7 +135,7 @@ export async function refreshAccessToken() {
   }
 }
 
-// Rest of your code remains the same...
+// Auth API remains the same
 export const authApi = {
   adminLogin: async (email, password) => {
     try {
@@ -256,7 +256,9 @@ export const authApi = {
   },
 };
 
+// Updated Articles API
 export const articlesApi = {
+  // Get all articles with optional category filter
   getArticles: async (category) => {
     return requestWithAuth({
       method: "get",
@@ -265,6 +267,7 @@ export const articlesApi = {
     });
   },
 
+  // Get a specific article by ID
   getArticle: async (id) => {
     return requestWithAuth({
       method: "get",
@@ -272,23 +275,142 @@ export const articlesApi = {
     });
   },
 
+  // Create a new article (admin only)
   createArticle: async (articleData) => {
+    // For multipart form data with file uploads
+    const formData = new FormData();
+
+    // Add text fields
+    Object.keys(articleData).forEach((key) => {
+      if (key !== "cover_photo") {
+        if (Array.isArray(articleData[key])) {
+          // Handle arrays like contributors
+          articleData[key].forEach((item) => {
+            formData.append(`${key}[]`, item);
+          });
+        } else {
+          formData.append(key, articleData[key]);
+        }
+      }
+    });
+
+    // Add file if present
+    if (articleData.cover_photo) {
+      formData.append("cover_photo", articleData.cover_photo);
+    }
+
     return requestWithAuth({
       method: "post",
-      url: "/admin/articles",
-      data: articleData,
+      url: "/articles",
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
   },
 
+  // Update an existing article (admin only)
   updateArticle: async (id, articleData) => {
+    // For multipart form data with file uploads
+    const formData = new FormData();
+
+    // Add text fields
+    Object.keys(articleData).forEach((key) => {
+      if (key !== "cover_photo") {
+        if (Array.isArray(articleData[key])) {
+          // Handle arrays like contributors
+          articleData[key].forEach((item) => {
+            formData.append(`${key}[]`, item);
+          });
+        } else {
+          formData.append(key, articleData[key]);
+        }
+      }
+    });
+
+    // Add file if present
+    if (articleData.cover_photo) {
+      formData.append("cover_photo", articleData.cover_photo);
+    }
+
     return requestWithAuth({
       method: "put",
-      url: `/admin/articles/${id}`,
-      data: articleData,
+      url: `/articles/${id}`,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+
+  // Delete an article (admin only)
+  deleteArticle: async (id) => {
+    return requestWithAuth({
+      method: "delete",
+      url: `/articles/${id}`,
+    });
+  },
+
+  // Get dashboard data for articles
+  getDashboardData: async (query) => {
+    return requestWithAuth({
+      method: "get",
+      url: "/articles/dashboard",
+      params: query ? { q: query } : {},
     });
   },
 };
 
+// New Article Views API
+export const articleViewsApi = {
+  // Record a view for an article (public)
+  recordView: async (articleId) => {
+    return apiClient.post(`/article-views/${articleId}/view`);
+  },
+
+  // Get popular articles (public)
+  getPopularArticles: async (limit = 5, period = "all") => {
+    return apiClient.get(`/article-views/popular`, {
+      params: { limit, period },
+    });
+  },
+
+  // Get view stats for a specific article (admin/researcher only)
+  getArticleViewStats: async (articleId) => {
+    return requestWithAuth({
+      method: "get",
+      url: `/article-views/${articleId}/stats`,
+    });
+  },
+};
+
+// New Faculty API
+export const facultyApi = {
+  // Get all faculties
+  getFaculties: async () => {
+    return apiClient.get("/faculty");
+  },
+
+  // Get a specific faculty by code
+  getFacultyByCode: async (code) => {
+    return apiClient.get(`/faculty/${code}`);
+  },
+};
+
+// New Department API
+export const departmentApi = {
+  // Get all departments
+  getDepartments: async () => {
+    return apiClient.get("/department");
+  },
+
+  // Get a specific department by code
+  getDepartmentByCode: async (code) => {
+    return apiClient.get(`/department/${code}`);
+  },
+};
+
+// Researchers API (mostly the same but with added functionality)
 export const researchersApi = {
   getResearchers: async () => {
     return requestWithAuth({
