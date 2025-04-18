@@ -43,6 +43,12 @@ const ArticleSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    summary: {
+      type: String,
+      required: true,
+      maxlength: 500, // Short summary
+      trim: true,
+    },
     publish_date: {
       type: Date,
       default: Date.now,

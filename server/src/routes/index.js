@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes.js';
 import adminRoutes from './admin.routes.js';
+import researcherRoutes from './researcher.routes.js';
 import featureRoutes from '../Articles/routes/index.js';
 
 const router = Router();
@@ -8,6 +9,7 @@ const router = Router();
 // Mount route groups
 router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
+router.use('/researcher', researcherRoutes);
 router.use('/', featureRoutes);
 
 // Root route

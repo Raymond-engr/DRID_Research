@@ -60,8 +60,15 @@ class ArticleController {
   };
 
   createArticle = async (req, res) => {
-    const { title, category, content, faculty, department, contributors } =
-      req.body;
+    const {
+      title,
+      category,
+      content,
+      faculty,
+      department,
+      contributors,
+      summary,
+    } = req.body;
 
     try {
       // Check if faculty exists
@@ -109,6 +116,7 @@ class ArticleController {
         title,
         category,
         content,
+        summary: summary || title.substring(0, 100), // Use provided summary or title truncated
         faculty: facultyExists._id,
         department: departmentExists._id,
         owner: req.user.id,
@@ -212,8 +220,15 @@ class ArticleController {
         return res.status(401).json({ msg: 'Not authorized' });
       }
 
-      const { title, category, content, faculty, department, contributors } =
-        req.body;
+      const {
+        title,
+        category,
+        content,
+        faculty,
+        department,
+        contributors,
+        summary,
+      } = req.body;
 
       // Check if faculty exists if provided
       if (faculty) {
@@ -268,7 +283,7 @@ class ArticleController {
       if (title) article.title = title;
       if (category) article.category = category;
       if (content) article.content = content;
-
+      if (summary) article.summary = summary;
       // Handle file upload
       if (req.file) {
         // Delete previous cover photo if exists

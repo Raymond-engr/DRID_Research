@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import User from '../model/user.model.js';
-import tokenService from '../services/token.service.js';
 import emailService from '../services/email.service.js';
 import { BadRequestError, NotFoundError } from '../utils/customErrors.js';
 import asyncHandler from '../utils/asyncHandler.js';
