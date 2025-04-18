@@ -289,29 +289,8 @@ export const articlesApi = {
   },
 
   // Update an existing article (admin only)
-  updateArticle: async (id, articleData) => {
+  updateArticle: async (id, formData) => {
     // For multipart form data with file uploads
-    const formData = new FormData();
-
-    // Add text fields
-    Object.keys(articleData).forEach((key) => {
-      if (key !== "cover_photo") {
-        if (Array.isArray(articleData[key])) {
-          // Handle arrays like contributors
-          articleData[key].forEach((item) => {
-            formData.append(`${key}[]`, item);
-          });
-        } else {
-          formData.append(key, articleData[key]);
-        }
-      }
-    });
-
-    // Add file if present
-    if (articleData.cover_photo) {
-      formData.append("cover_photo", articleData.cover_photo);
-    }
-
     return requestWithAuth({
       method: "put",
       url: `/articles/${id}`,

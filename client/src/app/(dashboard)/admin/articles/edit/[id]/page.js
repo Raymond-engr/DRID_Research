@@ -28,6 +28,7 @@ import {
   Save,
   RefreshCw,
 } from "lucide-react";
+import { getImageUrl } from "@/lib/utils";
 import Link from "next/link";
 
 function EditArticlePage() {
@@ -75,15 +76,22 @@ function EditArticlePage() {
             departmentApi.getDepartments(),
           ]);
 
-        setResearchers(researchersData.data);
-        setFaculties(facultiesData.data);
-        setDepartments(departmentsData);
+        // Ensure we're working with arrays
+        const researchersArray = researchersData.data || [];
+        const facultiesArray = facultiesData.data || [];
+        const departmentsArray = Array.isArray(departmentsData)
+          ? departmentsData
+          : departmentsData.data || [];
+
+        setResearchers(researchersArray);
+        setFaculties(facultiesArray);
+        setDepartments(departmentsArray);
 
         // Find the faculty and department codes based on IDs
-        const facultyItem = facultiesData.find(
+        const facultyItem = facultiesArray.find(
           (f) => f._id === articleData.faculty
         );
-        const departmentItem = departmentsData.find(
+        const departmentItem = departmentsArray.find(
           (d) => d._id === articleData.department
         );
 
@@ -148,9 +156,21 @@ function EditArticlePage() {
     setFormData((prev) => ({ ...prev, department: value }));
   };
 
-  const handleContributorsChange = (value) => {
-    const contributorsList = Array.isArray(value) ? value : [value];
-    setFormData((prev) => ({ ...prev, contributors: contributorsList }));
+  const handleContributorToggle = (contributorId) => {
+    setFormData((prev) => {
+      // Check if contributors already includes this value
+      if (prev.contributors.includes(contributorId)) {
+        return {
+          ...prev,
+          contributors: prev.contributors.filter((id) => id !== contributorId),
+        };
+      } else {
+        return {
+          ...prev,
+          contributors: [...prev.contributors, contributorId],
+        };
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -171,6 +191,12 @@ function EditArticlePage() {
       !formData.department
     ) {
       setError("Please fill in all required fields");
+      return;
+    }
+
+    // Validate contributors (optional - remove if not needed)
+    if (formData.contributors.length === 0) {
+      setError("Please select at least one contributor");
       return;
     }
 
@@ -277,22 +303,25 @@ function EditArticlePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contributors">Contributors</Label>
-              <Select
-                value={formData.contributors}
-                onValueChange={handleContributorsChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select contributors" />
-                </SelectTrigger>
-                <SelectContent>
-                  {researchers.map((researcher) => (
-                    <SelectItem key={researcher._id} value={researcher._id}>
+              <Label htmlFor="contributors">Contributors*</Label>
+              <div className="border rounded-md p-2 max-h-32 overflow-y-auto">
+                {researchers.map((researcher) => (
+                  <div
+                    key={researcher._id}
+                    className="flex items-center space-x-2 py-1"
+                  >
+                    <input
+                      type="checkbox"
+                      id={`contributor-${researcher._id}`}
+                      checked={formData.contributors.includes(researcher._id)}
+                      onChange={() => handleContributorToggle(researcher._id)}
+                    />
+                    <label htmlFor={`contributor-${researcher._id}`}>
                       {researcher.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -303,14 +332,24 @@ function EditArticlePage() {
                 value={formData.faculty}
                 onValueChange={handleFacultyChange}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select faculty" />
+                <SelectTrigger className="truncate">
+                  <SelectValue
+                    placeholder="Select faculty"
+                    className="truncate max-w-full"
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {Array.isArray(faculties) &&
                     faculties.map((faculty) => (
-                      <SelectItem key={faculty._id} value={faculty.code}>
-                        {faculty.title}
+                      <SelectItem
+                        key={faculty._id}
+                        value={faculty.code}
+                        className="truncate"
+                        title={faculty.title}
+                      >
+                        {faculty.title.length > 30
+                          ? faculty.title.substring(0, 30) + "..."
+                          : faculty.title}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -324,19 +363,27 @@ function EditArticlePage() {
                 onValueChange={handleDepartmentChange}
                 disabled={!formData.faculty}
               >
-                <SelectTrigger>
+                <SelectTrigger className="truncate max-w-full">
                   <SelectValue
                     placeholder={
                       formData.faculty
                         ? "Select department"
                         : "Select faculty first"
                     }
+                    className="truncate"
                   />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredDepartments.map((department) => (
-                    <SelectItem key={department._id} value={department.code}>
-                      {department.title}
+                    <SelectItem
+                      key={department._id}
+                      value={department.code}
+                      className="truncate"
+                      title={department.title}
+                    >
+                      {department.title.length > 30
+                        ? department.title.substring(0, 30) + "..."
+                        : department.title}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -365,7 +412,7 @@ function EditArticlePage() {
               {coverPhotoPreview && (
                 <div className="ml-4">
                   <img
-                    src={coverPhotoPreview}
+                    src={getImageUrl(coverPhotoPreview)}
                     alt="Cover preview"
                     className="w-16 h-16 object-cover rounded-md"
                   />
