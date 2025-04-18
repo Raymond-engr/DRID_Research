@@ -192,8 +192,8 @@ class ResearcherProfileController {
         {
           $match: {
             $or: [
-              { owner: mongoose.Types.ObjectId(userId) },
-              { contributors: mongoose.Types.ObjectId(userId) },
+              { owner: new mongoose.Types.ObjectId(userId) },
+              { contributors: new mongoose.Types.ObjectId(userId) },
             ],
             publish_date: { $gte: sixMonthsAgo },
           },
@@ -215,8 +215,8 @@ class ResearcherProfileController {
         {
           $match: {
             $or: [
-              { owner: mongoose.Types.ObjectId(userId) },
-              { contributors: mongoose.Types.ObjectId(userId) },
+              { owner: new mongoose.Types.ObjectId(userId) },
+              { contributors: new mongoose.Types.ObjectId(userId) },
             ],
           },
         },
