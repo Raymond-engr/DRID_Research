@@ -139,7 +139,20 @@ function AdminArticlesPage() {
   };
 
   const handleContributorsChange = (value) => {
-    setFormData((prev) => ({ ...prev, contributors: [value] }));
+    setFormData((prev) => {
+      // Check if contributors already includes this value
+      if (prev.contributors.includes(value)) {
+        return {
+          ...prev,
+          contributors: prev.contributors.filter((id) => id !== value),
+        };
+      } else {
+        return {
+          ...prev,
+          contributors: [...prev.contributors, value],
+        };
+      }
+    });
   };
 
   const resetForm = () => {
@@ -178,6 +191,21 @@ function AdminArticlesPage() {
       return;
     }
 
+    // Validate contributors
+    if (formData.contributors.length === 0) {
+      setError("Please select at least one contributor");
+      return;
+    }
+
+    console.log("Form data before submission:", {
+      title: formData.title,
+      category: formData.category,
+      content: formData.content,
+      faculty: formData.faculty, // Check if this is correctly set
+      department: formData.department,
+      contributors: formData.contributors,
+    });
+
     setIsSubmitting(true);
 
     try {
@@ -205,11 +233,15 @@ function AdminArticlesPage() {
       const response = await articlesApi.createArticle(articleFormData);
 
       // Add new article to the list
-      setArticles([response, ...articles]);
+      setArticles((prevArticles) => [response, ...prevArticles]);
       setShowAddDialog(false);
       resetForm();
     } catch (error) {
-      setError(error.message || "Failed to create article");
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to create article";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -325,21 +357,37 @@ function AdminArticlesPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="contributors">Contributors</Label>
-                  <Select
-                    value={formData.contributors}
-                    onValueChange={handleContributorsChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select contributors" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {researchers.map((researcher) => (
-                        <SelectItem key={researcher._id} value={researcher._id}>
+                  <div className="border rounded-md p-2 max-h-32 overflow-y-auto">
+                    {researchers.map((researcher) => (
+                      <div
+                        key={researcher._id}
+                        className="flex items-center space-x-2 py-1"
+                      >
+                        <input
+                          type="checkbox"
+                          id={`contributor-${researcher._id}`}
+                          checked={formData.contributors.includes(
+                            researcher._id
+                          )}
+                          onChange={() => {
+                            const newContributors =
+                              formData.contributors.includes(researcher._id)
+                                ? formData.contributors.filter(
+                                    (id) => id !== researcher._id
+                                  )
+                                : [...formData.contributors, researcher._id];
+                            setFormData((prev) => ({
+                              ...prev,
+                              contributors: newContributors,
+                            }));
+                          }}
+                        />
+                        <label htmlFor={`contributor-${researcher._id}`}>
                           {researcher.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -361,8 +409,8 @@ function AdminArticlesPage() {
                         <SelectItem
                           key={faculty._id}
                           value={faculty.code}
-                          className="truncate max-w-[300px]"
-                          title={faculty.title}
+                          className="truncate"
+                          title={faculty.title} // This adds a tooltip on hover
                         >
                           {faculty.title}
                         </SelectItem>
