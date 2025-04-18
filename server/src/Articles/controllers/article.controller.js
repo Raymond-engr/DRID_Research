@@ -60,9 +60,6 @@ class ArticleController {
   };
 
   createArticle = async (req, res) => {
-    logger.info('Request body:', req.body);
-    logger.info('Faculty code received:', req.body.faculty);
-
     const { title, category, content, faculty, department, contributors } =
       req.body;
 
@@ -136,9 +133,7 @@ class ArticleController {
       logger.info(`Article created successfully: ${article._id}`);
       res.json(article);
     } catch (err) {
-      logger.error(`Error creating article: ${err.message}`, {
-        stack: err.stack,
-      });
+      logger.error(`Error creating article: ${err.message}`);
       res.status(500).send('Server Error');
     }
   };
