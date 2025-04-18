@@ -85,7 +85,7 @@ class ArticleController {
         const contributorIds = contributors
           .map((id) =>
             mongoose.Types.ObjectId.isValid(id)
-              ? mongoose.Types.ObjectId(id)
+              ? mongoose.Types.ObjectId.createFromHexString(id)
               : null
           )
           .filter((id) => id !== null);
@@ -119,6 +119,8 @@ class ArticleController {
         ? `${process.env.API_URL || 'http://localhost:3000'}/uploads/cover_pic/${req.file.filename}`
         : null;
 
+      logger.info(`Cover photo uploaded: ${article.cover_photo}`);
+
       // Save article first
       await article.save();
 
@@ -127,6 +129,7 @@ class ArticleController {
         article.contributors = validContributors.map(
           (contributor) => contributor._id
         );
+        logger.info(`Contributors added: ${article.contributors}`);
         await article.save();
       }
 
