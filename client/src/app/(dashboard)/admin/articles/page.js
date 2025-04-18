@@ -229,7 +229,11 @@ function AdminArticlesPage() {
         articleFormData.append("cover_photo", formData.cover_photo);
       }
 
-      console.log("Submitting form with faculty:", formData.faculty);
+      console.log("FormData contents:");
+      for (let pair of articleFormData.entries()) {
+        console.log(pair[0] + ": " + pair[1]);
+      }
+
       const response = await articlesApi.createArticle(articleFormData);
 
       // Add new article to the list
