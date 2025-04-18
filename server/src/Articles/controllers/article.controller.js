@@ -241,7 +241,7 @@ class ArticleController {
         const contributorIds = contributors
           .map((id) =>
             mongoose.Types.ObjectId.isValid(id)
-              ? mongoose.Types.ObjectId(id)
+              ? mongoose.Types.ObjectId.createFromHexString(id)
               : null
           )
           .filter((id) => id !== null);
