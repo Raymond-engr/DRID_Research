@@ -60,6 +60,9 @@ class ArticleController {
   };
 
   createArticle = async (req, res) => {
+    logger.info('Request body:', req.body);
+    logger.info('Faculty code received:', req.body.faculty);
+
     const { title, category, content, faculty, department, contributors } =
       req.body;
 
