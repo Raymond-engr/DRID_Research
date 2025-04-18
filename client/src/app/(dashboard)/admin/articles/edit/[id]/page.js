@@ -75,8 +75,8 @@ function EditArticlePage() {
             departmentApi.getDepartments(),
           ]);
 
-        setResearchers(researchersData);
-        setFaculties(facultiesData);
+        setResearchers(researchersData.data);
+        setFaculties(facultiesData.data);
         setDepartments(departmentsData);
 
         // Find the faculty and department codes based on IDs

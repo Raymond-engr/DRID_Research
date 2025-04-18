@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { Eye, Calendar, User, BookOpen, Tag } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { getImageUrl } from "@/lib/utils";
 import Link from "next/link";
 
 export default function ArticleDetailPage() {
@@ -101,10 +103,13 @@ export default function ArticleDetailPage() {
 
         {article.cover_photo && (
           <div className="mb-8">
-            <img
-              src={article.cover_photo}
+            <Image
+              src={getImageUrl(article.cover_photo)}
               alt={`Cover image for ${article.title}`}
               className="w-full h-auto rounded-lg shadow-md object-cover max-h-96"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+              width={800}
+              height={400}
             />
           </div>
         )}
@@ -133,8 +138,8 @@ export default function ArticleDetailPage() {
                 className="flex items-center p-4 border rounded-lg"
               >
                 {contributor.profile_image ? (
-                  <img
-                    src={contributor.profile_image}
+                  <Image
+                    src={getImageUrl(contributor.profile_image)}
                     alt={contributor.name}
                     className="w-12 h-12 rounded-full mr-4 object-cover"
                   />
