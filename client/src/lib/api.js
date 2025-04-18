@@ -398,3 +398,41 @@ export const researchersApi = {
     });
   },
 };
+
+// Adding a new section for researcher-specific API calls
+export const researcherDashboardApi = {
+  getProfile: async () => {
+    return requestWithAuth({
+      method: "get",
+      url: "/researcher/profile",
+    });
+  },
+
+  // Get researcher's popular articles
+  getPopularArticles: async (limit = 5) => {
+    return requestWithAuth({
+      method: "get",
+      url: "/researcher/popular-articles",
+      params: { limit },
+    });
+  },
+
+  // Get researcher's analytics
+  getAnalytics: async () => {
+    return requestWithAuth({
+      method: "get",
+      url: "/researcher/analytics",
+    });
+  },
+
+  // Get all articles for the researcher
+  getMyArticles: async () => {
+    return requestWithAuth({
+      method: "get",
+      url: "/researcher/profile",
+    }).then((response) => {
+      // Extract articles from the profile response
+      return response.data.articles || [];
+    });
+  },
+};
