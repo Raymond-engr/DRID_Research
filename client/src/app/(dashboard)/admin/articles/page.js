@@ -405,7 +405,7 @@ function AdminArticlesPage() {
                     <SelectTrigger className="truncate">
                       <SelectValue
                         placeholder="Select faculty"
-                        className="truncate"
+                        className="truncate max-w-full"
                       />
                     </SelectTrigger>
                     <SelectContent>
@@ -416,7 +416,9 @@ function AdminArticlesPage() {
                           className="truncate"
                           title={faculty.title} // This adds a tooltip on hover
                         >
-                          {faculty.title}
+                          {faculty.title.length > 30
+                            ? faculty.title.substring(0, 30) + "..."
+                            : faculty.title}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -430,7 +432,7 @@ function AdminArticlesPage() {
                     onValueChange={handleDepartmentChange}
                     disabled={!formData.faculty}
                   >
-                    <SelectTrigger className="truncate">
+                    <SelectTrigger className="truncate max-w-full">
                       <SelectValue
                         placeholder={
                           formData.faculty
@@ -445,10 +447,12 @@ function AdminArticlesPage() {
                         <SelectItem
                           key={department._id}
                           value={department.code}
-                          className="truncate max-w-[300px]"
+                          className="truncate"
                           title={department.title}
                         >
-                          {department.title}
+                          {department.title.length > 30
+                            ? department.title.substring(0, 30) + "..."
+                            : department.title}
                         </SelectItem>
                       ))}
                     </SelectContent>
