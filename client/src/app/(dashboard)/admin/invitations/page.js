@@ -176,8 +176,8 @@ function AdminInvitationsPage() {
         return "bg-green-100 text-green-800";
       case "expired":
         return "bg-gray-100 text-gray-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
+      case "added":
+        return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -193,6 +193,8 @@ function AdminInvitationsPage() {
         return <AlertCircle className="h-4 w-4 mr-1" />;
       case "rejected":
         return <X className="h-4 w-4 mr-1" />;
+      case "added":
+        return <Check className="h-4 w-4 mr-1" />;
       default:
         return null;
     }
