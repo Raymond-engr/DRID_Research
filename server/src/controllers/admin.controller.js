@@ -91,6 +91,7 @@ class AdminController {
       password: generatedPassword,
       role: 'researcher',
       isActive: true,
+      invitationStatus: 'added',
     });
 
     logger.info(`Researcher profile manually created for: ${email}`);
@@ -168,7 +169,7 @@ class AdminController {
 
     const invitations = await User.find({
       role: 'researcher',
-      invitationStatus: { $in: ['pending', 'expired', 'accepted'] },
+      invitationStatus: { $in: ['pending', 'expired', 'accepted', 'added'] },
     }).select('_id email inviteTokenExpires createdAt invitationStatus');
 
     const formattedInvitations = invitations.map((invitation) => ({

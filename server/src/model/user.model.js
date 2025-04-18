@@ -54,7 +54,7 @@ const UserSchema = new mongoose.Schema({
   },
   invitationStatus: {
     type: String,
-    enum: ['pending', 'accepted', 'expired'],
+    enum: ['pending', 'accepted', 'added', 'expired'],
     default: 'pending',
   },
   lastLogin: {
