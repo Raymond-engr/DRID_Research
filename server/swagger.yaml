@@ -1392,8 +1392,15 @@ paths:
                 properties:
                   success:
                     type: boolean
-                  message:
-                    type: string
+                  views:
+                    type: integer
+                  description: Total number of views for the article
+        '400':
+          description: Invalid article ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Article not found
           content:
@@ -1419,15 +1426,29 @@ paths:
             type: integer
             default: 5
           description: Number of articles to return
+        - in: query
+          name: period
+          schema:
+            type: string
+            enum: [all, day, week, month, year]
+            default: all
+          description: Time period to filter articles
       responses:
         '200':
           description: Popular articles
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Article'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
         '500':
           description: Server error
           content:
@@ -1457,13 +1478,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  articleId:
-                    type: string
-                  title:
-                    type: string
-                  viewCount:
+                  success:
+                    type: boolean
+                  totalViews:
                     type: integer
-                  viewsByDay:
+                  dailyStats:
                     type: array
                     items:
                       type: object
@@ -1473,8 +1492,12 @@ paths:
                           format: date
                         count:
                           type: integer
-                  uniqueVisitors:
-                    type: integer
+        '400':
+          description: Invalid article ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized - valid token required
           content:
