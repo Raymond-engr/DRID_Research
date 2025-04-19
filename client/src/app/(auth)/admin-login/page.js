@@ -66,6 +66,7 @@ export default function AdminLoginPage() {
     try {
       await adminLogin(email, password);
       router.push("/admin");
+      console.log("Admin login successful");
     } catch (error) {
       setError(
         error.response?.data?.message ||
@@ -74,6 +75,7 @@ export default function AdminLoginPage() {
       );
     } finally {
       setIsLoading(false);
+      router.push("/admin");
     }
   };
 
