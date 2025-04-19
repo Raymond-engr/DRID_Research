@@ -39,16 +39,124 @@ components:
           enum: [admin, researcher]
         faculty:
           type: string
+        bio:
+          type: string
         title:
           type: string
         profilePicture:
           type: string
         isActive:
           type: boolean
+        invitationStatus:
+          type: string
+          enum: [pending, accepted, added, expired]
         lastLogin:
           type: string
           format: date-time
         createdAt:
+          type: string
+          format: date-time
+        articles:
+          type: array
+          items:
+            type: string
+
+    Article:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          enum: [Research, Innovation, Development]
+        content:
+          type: string
+          maxLength: 10000
+        cover_photo:
+          type: string
+        contributors:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        faculty:
+          type: string
+        department:
+          type: string
+        owner:
+          type: string
+        summary:
+          type: string
+          maxLength: 500
+        publish_date:
+          type: string
+          format: date-time
+        views:
+          type: object
+          properties:
+            count:
+              type: number
+            viewers:
+              type: array
+              items:
+                type: object
+                properties:
+                  identifier:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, published, archived]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Faculty:
+      type: object
+      properties:
+        _id:
+          type: string
+        code:
+          type: string
+          maxLength: 10
+        title:
+          type: string
+          maxLength: 255
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Department:
+      type: object
+      properties:
+        _id:
+          type: string
+        code:
+          type: string
+          maxLength: 10
+        title:
+          type: string
+          maxLength: 255
+        faculty:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
 
@@ -95,6 +203,34 @@ components:
               type: string
             profilePicture:
               type: string
+              
+    ResearcherProfileResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            profile:
+              $ref: '#/components/schemas/User'
+            articles:
+              type: array
+              items:
+                $ref: '#/components/schemas/Article'
+            collaborators:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
+            stats:
+              type: object
+              properties:
+                total_articles:
+                  type: integer
+                sole_author:
+                  type: integer
+                collaborations:
+                  type: integer
 
     ErrorResponse:
       type: object
@@ -508,7 +644,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  
+
   # Get pending invitations
   /admin/invitations:
     get:
