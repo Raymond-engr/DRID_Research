@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { getImageUrl } from "@/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
 
 function EditArticlePage() {
   const router = useRouter();
@@ -401,7 +402,6 @@ function EditArticlePage() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="department">Department*</Label>
               <Select
@@ -457,10 +457,12 @@ function EditArticlePage() {
               </label>
               {coverPhotoPreview && (
                 <div className="ml-4">
-                  <img
+                  <Image
                     src={getImageUrl(coverPhotoPreview)}
                     alt="Cover preview"
                     className="w-16 h-16 object-cover rounded-md"
+                    width={64}
+                    height={64}
                   />
                 </div>
               )}

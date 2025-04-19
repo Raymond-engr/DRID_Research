@@ -74,7 +74,6 @@ export default function ResearcherLoginPage() {
       );
     } finally {
       setIsLoading(false);
-      router.push("/researcher");
     }
   };
 
