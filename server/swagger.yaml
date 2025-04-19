@@ -361,6 +361,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+                
+  /auth/verify-token:
+    get:
+      summary: Verify the validity of an access token
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        type: string
+                      name:
+                        type: string
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /auth/logout:
     post:
@@ -485,7 +520,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  # Add manually creating researcher profile
   /admin/researchers/add:
     post:
       summary: Add a researcher profile manually (admin only)
@@ -558,7 +592,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  # Get researchers list
   /admin/researchers:
     get:
       summary: Get all active researchers (admin only)
@@ -645,7 +678,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  # Get pending invitations
   /admin/invitations:
     get:
       summary: Get all pending invitations (admin only)
@@ -688,7 +720,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  # Resend invitation
   /admin/invitations/{id}/resend:
     post:
       summary: Resend an invitation (admin only)
@@ -728,7 +759,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  # Delete invitation
   /admin/invitations/{id}:
     delete:
       summary: Delete an invitation (admin only)
@@ -763,6 +793,282 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized - admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /researcher/profile:
+    get:
+      summary: Get researcher's own profile
+      tags:
+        - Researcher
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Researcher profile with articles and collaborators
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearcherProfileResponse'
+        '401':
+          description: Unauthorized - valid token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /researcher/profile/{id}:
+    get:
+      summary: Get specific researcher profile (admin can view any, researcher only their own)
+      tags:
+        - Researcher
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID of the researcher
+      responses:
+        '200':
+          description: Researcher profile with articles and collaborators
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearcherProfileResponse'
+        '401':
+          description: Unauthorized - valid token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - cannot view other researcher's profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Researcher profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /researcher/popular-articles:
+    get:
+      summary: Get researcher's own popular articles
+      tags:
+        - Researcher
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 5
+          description: Number of articles to return
+      responses:
+        '200':
+          description: Popular articles sorted by view count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+        '401':
+          description: Unauthorized - valid token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /researcher/popular-articles/{id}:
+    get:
+      summary: Get specific researcher's popular articles (admin can view any, researcher only their own)
+      tags:
+        - Researcher
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID of the researcher
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 5
+          description: Number of articles to return
+      responses:
+        '200':
+          description: Popular articles sorted by view count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+        '401':
+          description: Unauthorized - valid token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - cannot view other researcher's data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /researcher/analytics:
+    get:
+      summary: Get researcher's own articles analytics
+      tags:
+        - Researcher
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Articles analytics data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      totalArticles:
+                        type: integer
+                      totalViews:
+                        type: integer
+                      mostViewed:
+                        oneOf:
+                          - $ref: '#/components/schemas/Article'
+                          - type: null
+                      articlesByMonth:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id:
+                              type: object
+                              properties:
+                                month:
+                                  type: integer
+                                year:
+                                  type: integer
+                            count:
+                              type: integer
+                      categoriesDistribution:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id:
+                              type: string
+                            count:
+                              type: integer
+        '401':
+          description: Unauthorized - valid token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /researcher/analytics/{id}:
+    get:
+      summary: Get specific researcher's analytics (admin can view any, researcher only their own)
+      tags:
+        - Researcher
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID of the researcher
+      responses:
+        '200':
+          description: Articles analytics data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      totalArticles:
+                        type: integer
+                      totalViews:
+                        type: integer
+                      mostViewed:
+                        oneOf:
+                          - $ref: '#/components/schemas/Article'
+                          - type: null
+                      articlesByMonth:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id:
+                              type: object
+                              properties:
+                                month:
+                                  type: integer
+                                year:
+                                  type: integer
+                            count:
+                              type: integer
+                      categoriesDistribution:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id:
+                              type: string
+                            count:
+                              type: integer
+        '401':
+          description: Unauthorized - valid token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - cannot view other researcher's data
           content:
             application/json:
               schema:
