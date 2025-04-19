@@ -43,14 +43,14 @@ export const upload = multer({
 });
 
 // Admin routes, change back to strictLimit later
-router.post('/admin/login', strictLimit, authController.adminLogin);
+router.post('/admin/login', standardLimit, authController.adminLogin);
 
 // Researcher routes
 router.post('/researcher/login', standardLimit, authController.researcherLogin);
 
 // Common routes
 router.post('/refresh-token', authController.refreshToken);
-router.post('/logout', authController.logout);
+router.post('/logout', strictLimit, authController.logout);
 
 // Token verification route
 router.get('/verify-token', authenticateToken, authController.verifyToken);
