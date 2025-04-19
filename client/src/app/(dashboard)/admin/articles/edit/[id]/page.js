@@ -40,12 +40,14 @@ function EditArticlePage() {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
+    summary: "",
     category: "",
     faculty: "",
     department: "",
     contributors: [],
     cover_photo: null,
   });
+  const [summaryWordCount, setSummaryWordCount] = useState(0);
   const [researchers, setResearchers] = useState([]);
   const [faculties, setFaculties] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -58,6 +60,17 @@ function EditArticlePage() {
     const words = formData.content.trim().split(/\s+/).length;
     setWordCount(formData.content.trim() === "" ? 0 : words);
   }, [formData.content]);
+
+  useEffect(() => {
+    if (formData.summary) {
+      const words = formData.summary.trim()
+        ? formData.summary.trim().split(/\s+/).length
+        : 0;
+      setSummaryWordCount(words);
+    } else {
+      setSummaryWordCount(0);
+    }
+  }, [formData.summary]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,6 +112,7 @@ function EditArticlePage() {
         setFormData({
           title: articleData.title || "",
           content: articleData.content || "",
+          summary: articleData.summary || "",
           category: articleData.category || "Research",
           faculty: facultyItem?.code || "",
           department: departmentItem?.code || "",
@@ -183,10 +197,16 @@ function EditArticlePage() {
       return;
     }
 
+    if (summaryWordCount > 50) {
+      setError("Summary exceeds the 50 word limit");
+      return;
+    }
+
     // Validate required fields
     if (
       !formData.title ||
       !formData.content ||
+      !formData.summary ||
       !formData.faculty ||
       !formData.department
     ) {
@@ -208,6 +228,7 @@ function EditArticlePage() {
       articleFormData.append("title", formData.title);
       articleFormData.append("category", formData.category);
       articleFormData.append("content", formData.content);
+      articleFormData.append("summary", formData.summary);
       articleFormData.append("faculty", formData.faculty);
       articleFormData.append("department", formData.department);
 
@@ -280,6 +301,31 @@ function EditArticlePage() {
               placeholder="Enter article title"
               value={formData.title}
               onChange={handleInputChange}
+              required
+            />
+          </div>
+
+          {/* Add Summary field with word count */}
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <Label htmlFor="summary">Summary* (50 words max)</Label>
+              <span
+                className={`text-sm ${
+                  summaryWordCount > 50
+                    ? "text-red-500 font-medium"
+                    : "text-gray-500"
+                }`}
+              >
+                {summaryWordCount}/50 words
+              </span>
+            </div>
+            <Textarea
+              id="summary"
+              name="summary"
+              placeholder="Enter a brief summary of the article"
+              value={formData.summary}
+              onChange={handleInputChange}
+              className="min-h-[100px]"
               required
             />
           </div>
@@ -451,7 +497,7 @@ function EditArticlePage() {
             </Button>
             <Button
               type="submit"
-              disabled={isSaving || wordCount > 1000}
+              disabled={isSaving || wordCount > 1000 || summaryWordCount > 50}
               className="flex items-center"
             >
               {isSaving ? (

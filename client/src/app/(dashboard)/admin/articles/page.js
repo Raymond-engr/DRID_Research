@@ -55,12 +55,14 @@ function AdminArticlesPage() {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
+    summary: "",
     category: "Research",
     faculty: "",
     department: "",
     contributors: [],
     cover_photo: null,
   });
+  const [summaryWordCount, setSummaryWordCount] = useState(0);
   const [researchers, setResearchers] = useState([]);
   const [faculties, setFaculties] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -106,6 +108,17 @@ function AdminArticlesPage() {
       setWordCount(0);
     }
   }, [formData.content]);
+
+  useEffect(() => {
+    if (formData.summary) {
+      const words = formData.summary.trim()
+        ? formData.summary.trim().split(/\s+/).length
+        : 0;
+      setSummaryWordCount(words);
+    } else {
+      setSummaryWordCount(0);
+    }
+  }, [formData.summary]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -159,6 +172,7 @@ function AdminArticlesPage() {
     setFormData({
       title: "",
       content: "",
+      summary: "",
       category: "Research",
       faculty: "",
       department: "",
@@ -167,6 +181,7 @@ function AdminArticlesPage() {
     });
     setCoverPhotoPreview(null);
     setWordCount(0);
+    setSummaryWordCount(0);
     setError("");
   };
 
@@ -180,10 +195,16 @@ function AdminArticlesPage() {
       return;
     }
 
+    if (summaryWordCount > 50) {
+      setError("Summary exceeds the 50 word limit");
+      return;
+    }
+
     // Validate required fields
     if (
       !formData.title ||
       !formData.content ||
+      !formData.summary || // Add summary validation
       !formData.faculty ||
       !formData.department
     ) {
@@ -194,6 +215,11 @@ function AdminArticlesPage() {
     // Validate contributors
     if (formData.contributors.length === 0) {
       setError("Please select at least one contributor");
+      return;
+    }
+
+    if (!formData.cover_photo) {
+      setError("Please add a cover photo");
       return;
     }
 
@@ -214,6 +240,7 @@ function AdminArticlesPage() {
       articleFormData.append("title", formData.title);
       articleFormData.append("category", formData.category);
       articleFormData.append("content", formData.content);
+      articleFormData.append("summary", formData.summary);
       articleFormData.append("faculty", formData.faculty);
       articleFormData.append("department", formData.department);
 
@@ -312,7 +339,7 @@ function AdminArticlesPage() {
               Add Article
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[700px]">
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Article</DialogTitle>
               <DialogDescription>
@@ -337,6 +364,31 @@ function AdminArticlesPage() {
                   placeholder="Enter article title"
                   value={formData.title}
                   onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              {/* Add Summary field with word count */}
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label htmlFor="summary">Summary* (50 words max)</Label>
+                  <span
+                    className={`text-sm ${
+                      summaryWordCount > 50
+                        ? "text-red-500 font-medium"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {summaryWordCount}/50 words
+                  </span>
+                </div>
+                <Textarea
+                  id="summary"
+                  name="summary"
+                  placeholder="Enter a brief summary of the article"
+                  value={formData.summary}
+                  onChange={handleInputChange}
+                  className="min-h-[100px]"
                   required
                 />
               </div>
@@ -414,7 +466,7 @@ function AdminArticlesPage() {
                           key={faculty._id}
                           value={faculty.code}
                           className="truncate"
-                          title={faculty.title} // This adds a tooltip on hover
+                          title={faculty.title}
                         >
                           {faculty.title.length > 30
                             ? faculty.title.substring(0, 30) + "..."
@@ -461,7 +513,7 @@ function AdminArticlesPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cover_photo">Cover Photo</Label>
+                <Label htmlFor="cover_photo">Cover Photo*</Label>
                 <div className="mt-1 flex items-center">
                   <Input
                     id="cover_photo"
@@ -510,7 +562,7 @@ function AdminArticlesPage() {
                 />
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="sticky bottom-0 pt-2 pb-2 bg-white border-t mt-6">
                 <Button
                   type="button"
                   variant="outline"
@@ -520,7 +572,9 @@ function AdminArticlesPage() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || wordCount > 1000}
+                  disabled={
+                    isSubmitting || wordCount > 1000 || summaryWordCount > 50
+                  }
                 >
                   {isSubmitting ? "Creating..." : "Create Article"}
                 </Button>
