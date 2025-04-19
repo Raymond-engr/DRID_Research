@@ -1073,3 +1073,529 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+                
+  /articles:
+    get:
+      summary: Get all articles with optional search
+      tags:
+        - Articles
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Optional search query for article title
+      responses:
+        '200':
+          description: List of articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Article'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    post:
+      summary: Create a new article
+      tags:
+        - Articles
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [title, category, content, faculty, department]
+              properties:
+                title:
+                  type: string
+                  description: Article title
+                category:
+                  type: string
+                  enum: [Research, Innovation, Development]
+                  description: Article category
+                content:
+                  type: string
+                  description: Article content
+                faculty:
+                  type: string
+                  description: Faculty code
+                department:
+                  type: string
+                  description: Department code
+                contributors:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of contributor IDs (must be active researchers)
+                summary:
+                  type: string
+                  description: Article summary (optional, defaults to first 100 chars of title)
+                cover_photo:
+                  type: string
+                  format: binary
+                  description: Cover photo for the article (JPEG, PNG, or JPG, max 3MB)
+      responses:
+        '200':
+          description: Article created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '400':
+          description: Invalid input or contributors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Faculty or department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /articles/dashboard:
+    get:
+      summary: Get dashboard data including category counts and recent articles
+      tags:
+        - Articles
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Optional search query for filtering recent articles
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  category_counts:
+                    type: object
+                    properties:
+                      Research:
+                        type: integer
+                      Innovation:
+                        type: integer
+                      Development:
+                        type: integer
+                  recent_articles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+                  query:
+                    type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /articles/{id}:
+    get:
+      summary: Get an article by its ID
+      tags:
+        - Articles
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID of the article
+      responses:
+        '200':
+          description: Article details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '404':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    put:
+      summary: Update an article
+      tags:
+        - Articles
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID of the article to update
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Article title
+                category:
+                  type: string
+                  enum: [Research, Innovation, Development]
+                  description: Article category
+                content:
+                  type: string
+                  description: Article content
+                faculty:
+                  type: string
+                  description: Faculty code
+                department:
+                  type: string
+                  description: Department code
+                contributors:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of contributor IDs (must be active researchers)
+                summary:
+                  type: string
+                  description: Article summary
+                cover_photo:
+                  type: string
+                  format: binary
+                  description: Cover photo for the article (JPEG, PNG, or JPG, max 3MB)
+      responses:
+        '200':
+          description: Article updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '400':
+          description: Invalid input or contributors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - only owner or admin can update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Article, faculty, or department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    delete:
+      summary: Delete an article
+      tags:
+        - Articles
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID of the article to delete
+      responses:
+        '200':
+          description: Article deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+        '401':
+          description: Unauthorized - only owner or admin can delete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /article-views/{id}/view:
+    post:
+      summary: Record a view for an article
+      tags:
+        - Article Views
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID of the article being viewed
+      responses:
+        '200':
+          description: View recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '404':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /article-views/popular:
+    get:
+      summary: Get popular articles sorted by view count
+      tags:
+        - Article Views
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 5
+          description: Number of articles to return
+      responses:
+        '200':
+          description: Popular articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Article'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /article-views/{id}/stats:
+    get:
+      summary: Get view statistics for an article
+      tags:
+        - Article Views
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID of the article
+      responses:
+        '200':
+          description: View statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  articleId:
+                    type: string
+                  title:
+                    type: string
+                  viewCount:
+                    type: integer
+                  viewsByDay:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        count:
+                          type: integer
+                  uniqueVisitors:
+                    type: integer
+        '401':
+          description: Unauthorized - valid token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /faculty:
+    get:
+      summary: Get all faculties
+      tags:
+        - Faculty
+      responses:
+        '200':
+          description: List of all faculties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Faculty'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /faculty/{code}:
+    get:
+      summary: Get a faculty by its code
+      tags:
+        - Faculty
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Code of the faculty
+      responses:
+        '200':
+          description: Faculty details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Faculty'
+        '404':
+          description: Faculty not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /department:
+    get:
+      summary: Get all departments
+      tags:
+        - Department
+      responses:
+        '200':
+          description: List of all departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Department'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /department/{code}:
+    get:
+      summary: Get a department by its code
+      tags:
+        - Department
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Code of the department
+      responses:
+        '200':
+          description: Department details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+        '404':
+          description: Department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
