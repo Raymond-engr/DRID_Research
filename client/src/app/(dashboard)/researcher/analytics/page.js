@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { withResearcherAuth } from "@/lib/auth";
 import { researcherDashboardApi } from "@/lib/api";
-import { RefreshCw, TrendingUp, BarChart2, Calendar, Eye, Filter } from "lucide-react";
+import { RefreshCw, TrendingUp, BarChart2, Calendar, Eye, Filter, AlertTriangle } from "lucide-react";
 import { LineChart, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, Bar, ResponsiveContainer } from "recharts";
 
 function ResearcherAnalyticsPage() {
@@ -84,17 +84,28 @@ function ResearcherAnalyticsPage() {
     );
   }
 
+  // More helpful error messages
   if (error) {
     return (
-      <div className="text-center p-6">
-        <p className="text-red-500 mb-4">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-        >
-          Retry
-        </button>
-      </div>
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
+            <div>
+              <h3 className="font-medium text-red-800">Failed to load data</h3>
+              <p className="text-sm text-red-600">{error}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+                className="mt-2"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -182,6 +193,13 @@ function ResearcherAnalyticsPage() {
           </div>
         </CardHeader>
         <CardContent className="h-80">
+        {viewsData.length === 0 ? (
+         <div className="flex flex-col items-center justify-center h-60 text-gray-500">
+            <BarChart2 className="h-12 w-12 mb-2 opacity-30" />
+            <p>No view data available yet</p>
+            <p className="text-sm">Data will appear as your articles get views</p>
+        </div>
+    ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={viewsData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -198,6 +216,7 @@ function ResearcherAnalyticsPage() {
               />
             </LineChart>
           </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -274,3 +293,21 @@ function ResearcherAnalyticsPage() {
                     date: "2023-11-18",
                     views: 162
                   }
+
+                  // Time period selector as tabs instead of dropdown
+<div className="flex space-x-1 rounded-lg bg-gray-100 p-1">
+  {["week", "month", "year"].map(period => (
+    <button
+      key={period}
+      onClick={() => setTimeFrame(period)}
+      className={`px-3 py-1.5 text-sm font-medium rounded-md ${
+        timeFrame === period 
+          ? "bg-white shadow-sm" 
+          : "text-gray-500 hover:text-gray-700"
+      }`}
+    >
+      {period === "week" ? "Last 7 Days" : 
+       period === "month" ? "Last 30 Days" : "Last 12 Months"}
+    </button>
+  ))}
+</div>

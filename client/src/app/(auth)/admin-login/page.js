@@ -75,7 +75,6 @@ export default function AdminLoginPage() {
       );
     } finally {
       setIsLoading(false);
-      router.push("/admin");
     }
   };
 

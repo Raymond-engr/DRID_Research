@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   FileText,
   Users,
   Eye,
+  AlertTriangle,
   TrendingUp,
   RefreshCw,
   Calendar,
   BarChart4,
+  BarChart2,
   Link as LinkIcon,
 } from "lucide-react";
 import { withResearcherAuth } from "@/lib/auth";
@@ -90,18 +93,28 @@ function ResearcherDashboard() {
     );
   }
 
-  // Display error state
+  // More helpful error messages
   if (error) {
     return (
-      <div className="text-center p-6">
-        <p className="text-red-500 mb-4">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Retry
-        </button>
-      </div>
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
+            <div>
+              <h3 className="font-medium text-red-800">Failed to load data</h3>
+              <p className="text-sm text-red-600">{error}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+                className="mt-2"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -116,38 +129,6 @@ function ResearcherDashboard() {
       {/* Researcher Profile Summary */}
       {profile && (
         <div className="flex flex-col md:flex-row gap-6 items-start">
-          <div className="w-full md:w-1/4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center">
-                  <div className="relative w-24 h-24 rounded-full overflow-hidden mb-4">
-                    {profile.profilePicture ? (
-                      <Image
-                        src={getImageUrl(profile.profilePicture)}
-                        alt={profile.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                        <Users className="h-12 w-12 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="text-xl font-semibold text-center">
-                    {profile.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 text-center">
-                    {profile.title || "Researcher"}
-                  </p>
-                  <p className="text-sm text-gray-500 text-center mt-2">
-                    {profile.email}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
           <div className="w-full md:w-3/4">
             <Card>
               <CardHeader>
@@ -189,6 +170,14 @@ function ResearcherDashboard() {
                         {analytics.totalViews || 0}
                       </p>
                     </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 mb-6">
+                    <Button variant="outline" asChild>
+                      <Link href="/researcher/analytics">
+                        <BarChart2 className="h-4 w-4 mr-2" /> View Analytics
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               </CardContent>

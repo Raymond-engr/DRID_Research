@@ -24,9 +24,8 @@ export default function AdminDashboardLayout({ children }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
-      console.log("Auth check in layout:", { user, isAdmin, loading });
-      if (user !== null || isAdmin !== false) {
+    if (!loading) {
+      if (!user || !isAdmin) {
         router.push("/admin-login");
       }
     }

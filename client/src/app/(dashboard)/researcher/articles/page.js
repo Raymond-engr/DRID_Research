@@ -13,6 +13,7 @@ import {
   Filter,
   Search,
   Tag,
+  AlertTriangle,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -70,18 +71,45 @@ function ResearcherArticlesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <RefreshCw className="h-8 w-8 animate-spin text-blue-500" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-24 mt-4 bg-gray-300 animate-pulse rounded-lg"
+          ></div>
+        ))}
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-72 bg-gray-300 animate-pulse rounded-lg"
+          ></div>
+        ))}
       </div>
     );
   }
 
+  // More helpful error messages
   if (error) {
     return (
-      <div className="text-center p-6">
-        <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={() => window.location.reload()}>Retry</Button>
-      </div>
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
+            <div>
+              <h3 className="font-medium text-red-800">Failed to load data</h3>
+              <p className="text-sm text-red-600">{error}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+                className="mt-2"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -127,43 +155,46 @@ function ResearcherArticlesPage() {
               key={article._id}
               className="block"
             >
-              <Card className="h-full hover:shadow-md transition-shadow">
+              <Card className="h-full hover:shadow-md transition-shadow overflow-hidden">
                 <div className="aspect-video relative">
                   {article.cover_photo ? (
                     <Image
                       src={getImageUrl(article.cover_photo)}
                       alt={article.title}
                       fill
-                      className="object-cover rounded-t-lg"
+                      className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                      <FileText className="h-12 w-12 text-gray-400" />
+                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                      <FileText className="h-12 w-12 text-gray-300" />
                     </div>
+                  )}
+                  {/* Add category badge on top of image */}
+                  {article.category && (
+                    <span className="absolute top-2 right-2 bg-white/80 text-xs px-2 py-1 rounded-full">
+                      {article.category}
+                    </span>
                   )}
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-semibold line-clamp-2 mb-2">
+                  <h3 className="font-semibold text-lg line-clamp-2 mb-2">
                     {article.title}
                   </h3>
-                  <p className="text-sm text-gray-500 line-clamp-3 mb-3">
-                    {article.summary}
-                  </p>
-                  <div className="flex flex-wrap justify-between items-center text-xs text-gray-500">
-                    <span className="flex items-center gap-1 mb-2">
+                  {/* Only show summary if it exists */}
+                  {article.summary && (
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                      {article.summary}
+                    </p>
+                  )}
+                  <div className="flex justify-between items-center text-xs text-gray-500">
+                    <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       {new Date(article.publish_date).toLocaleDateString()}
                     </span>
-                    <span className="flex items-center gap-1 mb-2">
+                    <span className="flex items-center gap-1">
                       <Eye className="h-3 w-3" />
                       {article.views?.count || 0} views
                     </span>
-                    {article.category && (
-                      <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
-                        <Tag className="h-3 w-3" />
-                        {article.category}
-                      </span>
-                    )}
                   </div>
                 </CardContent>
               </Card>

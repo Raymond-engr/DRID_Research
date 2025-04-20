@@ -144,6 +144,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: true,
         role: "researcher",
       });
+
       return true;
     } catch (error) {
       console.error("Researcher login failed:", error);

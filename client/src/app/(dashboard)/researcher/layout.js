@@ -23,15 +23,6 @@ export default function ResearcherDashboardLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (!loading && (!user || !isResearcher)) {
-      console.log("Auth check in layout:", { user, isResearcher, loading });
-      if (user !== null || isResearcher !== false) {
-        router.push("/researcher-login");
-      }
-    }
-  }, [user, loading, isResearcher, router]);
-
   // If still loading or user is not researcher, don't render anything
   if (loading || !user || !isResearcher) {
     return (

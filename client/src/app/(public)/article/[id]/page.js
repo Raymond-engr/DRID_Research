@@ -3,14 +3,16 @@
 import { useState, useEffect } from "react";
 import { articlesApi, articleViewsApi } from "@/lib/api";
 import { useParams } from "next/navigation";
-import { Eye, Calendar, User, BookOpen, Tag } from "lucide-react";
+import { Eye, Calendar, User, BookOpen, Tag, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { getImageUrl } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function ArticleDetailPage() {
+  const router = useRouter();
   const { id } = useParams();
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,8 +55,8 @@ export default function ArticleDetailPage() {
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{error || "Article not found"}</AlertDescription>
         </Alert>
-        <Button asChild>
-          <Link href="/">Return to Home</Link>
+        <Button asChild onClick={() => router.back()}>
+          Return Back
         </Button>
       </div>
     );
@@ -63,8 +65,12 @@ export default function ArticleDetailPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <Button variant="outline" asChild className="mb-6">
-          <Link href="/">← Back to Home</Link>
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className="mb-6 flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back
         </Button>
 
         <h1 className="text-3xl md:text-4xl font-bold mb-4">{article.title}</h1>
