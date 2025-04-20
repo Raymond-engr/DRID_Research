@@ -23,14 +23,6 @@ export default function AdminDashboardLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user || !isAdmin) {
-        router.push("/admin-login");
-      }
-    }
-  }, [user, loading, isAdmin, router]);
-
   // If still loading or user is not admin, don't render anything
   if (loading || !user || !isAdmin) {
     return (

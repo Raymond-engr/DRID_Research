@@ -2,10 +2,31 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { withResearcherAuth } from "@/lib/auth";
 import { researcherDashboardApi } from "@/lib/api";
-import { RefreshCw, TrendingUp, BarChart2, Calendar, Eye, Filter, AlertTriangle } from "lucide-react";
-import { LineChart, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, Bar, ResponsiveContainer } from "recharts";
+import {
+  RefreshCw,
+  TrendingUp,
+  BarChart2,
+  Calendar,
+  Eye,
+  Filter,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  LineChart,
+  BarChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  Line,
+  Bar,
+  ResponsiveContainer,
+} from "recharts";
+import Link from "next/link";
 
 function ResearcherAnalyticsPage() {
   const [analytics, setAnalytics] = useState({
@@ -14,7 +35,7 @@ function ResearcherAnalyticsPage() {
     mostViewed: null,
     articlesByMonth: [],
     categoriesDistribution: [],
-    viewsOverTime: []
+    viewsOverTime: [],
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,6 +45,7 @@ function ResearcherAnalyticsPage() {
     const fetchAnalytics = async () => {
       try {
         setIsLoading(true);
+        setError(null);
         const response = await researcherDashboardApi.getAnalytics();
         if (response?.data) {
           setAnalytics(response.data);
@@ -39,42 +61,23 @@ function ResearcherAnalyticsPage() {
     fetchAnalytics();
   }, []);
 
-  // Mock data for chart visualization
-  const generateMockViewsData = () => {
-    const now = new Date();
-    const data = [];
-    
-    if (timeFrame === "year") {
-      for (let i = 11; i >= 0; i--) {
-        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        data.push({
-          name: date.toLocaleString('default', { month: 'short' }),
-          views: Math.floor(Math.random() * 200) + 50,
-        });
-      }
-    } else if (timeFrame === "month") {
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-        data.push({
-          name: date.getDate().toString(),
-          views: Math.floor(Math.random() * 30) + 5,
-        });
-      }
-    } else { // week
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-        data.push({
-          name: date.toLocaleString('default', { weekday: 'short' }),
-          views: Math.floor(Math.random() * 15) + 3,
-        });
-      }
+  // Process the articlesByMonth data to have proper format for charts
+  const processArticlesByMonth = () => {
+    if (!analytics.articlesByMonth || analytics.articlesByMonth.length === 0) {
+      return [];
     }
-    
-    return data;
-  };
 
-  const viewsData = analytics.viewsOverTime?.length > 0 ? 
-    analytics.viewsOverTime : generateMockViewsData();
+    return analytics.articlesByMonth.map((item) => {
+      const monthName = new Date(0, item._id.month - 1).toLocaleString(
+        "default",
+        { month: "short" }
+      );
+      return {
+        name: `${monthName} ${item._id.year}`,
+        articles: item.count,
+      };
+    });
+  };
 
   if (isLoading) {
     return (
@@ -84,7 +87,6 @@ function ResearcherAnalyticsPage() {
     );
   }
 
-  // More helpful error messages
   if (error) {
     return (
       <Card className="border-red-200 bg-red-50">
@@ -110,17 +112,16 @@ function ResearcherAnalyticsPage() {
   }
 
   // Process categoryDistribution for the chart
-  const categoryData = analytics.categoriesDistribution?.length > 0 
-    ? analytics.categoriesDistribution.map(cat => ({
-        name: cat._id,
-        articles: cat.count
-      }))
-    : [
-        { name: "Research", articles: 12 },
-        { name: "Innovation", articles: 8 },
-        { name: "Technology", articles: 5 },
-        { name: "Education", articles: 3 }
-      ];
+  const categoryData =
+    analytics.categoriesDistribution?.length > 0
+      ? analytics.categoriesDistribution.map((cat) => ({
+          name: cat._id,
+          articles: cat.count,
+        }))
+      : [];
+
+  // For articles by month/views over time
+  const timeData = processArticlesByMonth();
 
   return (
     <div className="p-4 md:p-8 space-y-6">
@@ -133,7 +134,9 @@ function ResearcherAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm">Total Articles</p>
-                <h3 className="text-3xl font-bold">{analytics.totalArticles || 0}</h3>
+                <h3 className="text-3xl font-bold">
+                  {analytics.totalArticles || 0}
+                </h3>
               </div>
               <div className="p-3 bg-blue-100 rounded-full">
                 <BarChart2 className="h-6 w-6 text-blue-500" />
@@ -147,7 +150,9 @@ function ResearcherAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm">Total Views</p>
-                <h3 className="text-3xl font-bold">{analytics.totalViews || 0}</h3>
+                <h3 className="text-3xl font-bold">
+                  {analytics.totalViews || 0}
+                </h3>
               </div>
               <div className="p-3 bg-green-100 rounded-full">
                 <Eye className="h-6 w-6 text-green-500" />
@@ -160,11 +165,13 @@ function ResearcherAnalyticsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm">Average Views per Article</p>
+                <p className="text-gray-500 text-sm">
+                  Average Views per Article
+                </p>
                 <h3 className="text-3xl font-bold">
-                  {analytics.totalArticles ? 
-                    Math.round(analytics.totalViews / analytics.totalArticles) : 
-                    0}
+                  {analytics.totalArticles
+                    ? Math.round(analytics.totalViews / analytics.totalArticles)
+                    : 0}
                 </h3>
               </div>
               <div className="p-3 bg-purple-100 rounded-full">
@@ -175,47 +182,56 @@ function ResearcherAnalyticsPage() {
         </Card>
       </div>
 
-      {/* Views Over Time Chart */}
+      {/* Articles By Month Chart */}
       <Card>
         <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <CardTitle>Views Over Time</CardTitle>
-          <div className="flex items-center space-x-2 mt-2 md:mt-0">
-            <Filter className="h-4 w-4 text-gray-500" />
-            <select 
-              value={timeFrame}
-              onChange={(e) => setTimeFrame(e.target.value)}
-              className="border-0 bg-transparent text-sm focus:outline-none focus:ring-0"
-            >
-              <option value="week">Last 7 Days</option>
-              <option value="month">Last 30 Days</option>
-              <option value="year">Last 12 Months</option>
-            </select>
+          <CardTitle>Articles Published By Month</CardTitle>
+          <div className="flex space-x-1 rounded-lg bg-gray-100 p-1">
+            {["week", "month", "year"].map((period) => (
+              <button
+                key={period}
+                onClick={() => setTimeFrame(period)}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md ${
+                  timeFrame === period
+                    ? "bg-white shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {period === "week"
+                  ? "Last 7 Days"
+                  : period === "month"
+                    ? "Last 30 Days"
+                    : "Last 12 Months"}
+              </button>
+            ))}
           </div>
         </CardHeader>
         <CardContent className="h-80">
-        {viewsData.length === 0 ? (
-         <div className="flex flex-col items-center justify-center h-60 text-gray-500">
-            <BarChart2 className="h-12 w-12 mb-2 opacity-30" />
-            <p>No view data available yet</p>
-            <p className="text-sm">Data will appear as your articles get views</p>
-        </div>
-    ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={viewsData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="views" 
-                stroke="#4F46E5" 
-                activeDot={{ r: 8 }} 
-                strokeWidth={2} 
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {timeData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-60 text-gray-500">
+              <Calendar className="h-12 w-12 mb-2 opacity-30" />
+              <p>No article data available yet</p>
+              <p className="text-sm">
+                Data will appear as you publish articles
+              </p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={timeData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar
+                  type="monotone"
+                  dataKey="articles"
+                  fill="#4F46E5"
+                  stroke="#4F46E5"
+                  barSize={30}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           )}
         </CardContent>
       </Card>
@@ -226,88 +242,70 @@ function ResearcherAnalyticsPage() {
           <CardTitle>Articles by Category</CardTitle>
         </CardHeader>
         <CardContent className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={categoryData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="articles" fill="#3B82F6" />
-            </BarChart>
-          </ResponsiveContainer>
+          {categoryData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-60 text-gray-500">
+              <BarChart2 className="h-12 w-12 mb-2 opacity-30" />
+              <p>No category data available</p>
+              <p className="text-sm">
+                Data will appear as you categorize your articles
+              </p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={categoryData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="articles" fill="#3B82F6" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
-      {/* Most Viewed Articles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Most Viewed Articles</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="px-4 py-3 text-left font-medium">Article Title</th>
-                  <th className="px-4 py-3 text-left font-medium">Category</th>
-                  <th className="px-4 py-3 text-left font-medium">Published Date</th>
-                  <th className="px-4 py-3 text-left font-medium">Views</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Mock data - in a real app, this would come from the API */}
-                {[
-                  {
-                    id: 1,
-                    title: "Advances in Machine Learning Research",
-                    category: "Research",
-                    date: "2023-04-15",
-                    views: 345
-                  },
-                  {
-                    id: 2,
-                    title: "Educational Technology Innovations",
-                    category: "Innovation",
-                    date: "2023-06-22",
-                    views: 287
-                  },
-                  {
-                    id: 3,
-                    title: "The Future of Quantum Computing",
-                    category: "Technology",
-                    date: "2023-08-10",
-                    views: 211
-                  },
-                  {
-                    id: 4,
-                    title: "Sustainable Computing Practices",
-                    category: "Research",
-                    date: "2023-09-05",
-                    views: 189
-                  },
-                  {
-                    id: 5,
-                    title: "AI Ethics and Governance",
-                    category: "Education",
-                    date: "2023-11-18",
-                    views: 162
-                  }
+      {/* Most Viewed Article */}
+      {analytics.mostViewed && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Most Viewed Article</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-lg mb-1">
+                  {analytics.mostViewed.title}
+                </h3>
+                <div className="flex gap-3 text-sm text-gray-500">
+                  <span className="flex items-center">
+                    <Eye className="h-4 w-4 mr-1" />
+                    {analytics.mostViewed.views.count || 0} views
+                  </span>
+                  <span className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    {new Date(
+                      analytics.mostViewed.publish_date
+                    ).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
 
-                  // Time period selector as tabs instead of dropdown
-<div className="flex space-x-1 rounded-lg bg-gray-100 p-1">
-  {["week", "month", "year"].map(period => (
-    <button
-      key={period}
-      onClick={() => setTimeFrame(period)}
-      className={`px-3 py-1.5 text-sm font-medium rounded-md ${
-        timeFrame === period 
-          ? "bg-white shadow-sm" 
-          : "text-gray-500 hover:text-gray-700"
-      }`}
-    >
-      {period === "week" ? "Last 7 Days" : 
-       period === "month" ? "Last 30 Days" : "Last 12 Months"}
-    </button>
-  ))}
-</div>
+              <Button variant="outline" asChild>
+                <Link
+                  href={`/article/${analytics.mostViewed._id}`}
+                  key={analytics.mostViewed._id}
+                  className="block"
+                >
+                  View Article
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+export default withResearcherAuth(ResearcherAnalyticsPage);

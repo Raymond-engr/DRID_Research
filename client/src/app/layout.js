@@ -13,7 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "DRID - UNIBEN",
+  title: {
+    template: "%s | DRID - UNIBEN",
+    default: "DRID - UNIBEN",
+  },
   description: "Department of Research, Innovation and Development - UNIBEN",
 };
 
