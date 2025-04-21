@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import Link from "next/link";
-import { articlesApi, articleViewsApi } from "@/lib/api";
+import { articlesApi, articleViewsApi, facultyApi } from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 
 const ArticlePage = () => {
@@ -15,6 +15,7 @@ const ArticlePage = () => {
   const router = useRouter();
 
   const [article, setArticle] = useState(null);
+  const [faculty, setFaculty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [popularArticles, setPopularArticles] = useState([]);
@@ -47,9 +48,9 @@ const ArticlePage = () => {
 
         // Fetch popular articles
         try {
-          const popular = await articleViewsApi.getPopularArticles(2);
-          if (Array.isArray(popular)) {
-            setPopularArticles(popular);
+          const popular = await articleViewsApi.getPopularArticles(3);
+          if (popular && popular.data && Array.isArray(popular.data.data)) {
+            setPopularArticles(popular.data.data);
           } else {
             console.error(
               "Popular articles response is not an array:",
@@ -62,6 +63,20 @@ const ArticlePage = () => {
           setPopularArticles([]);
         }
 
+        try {
+          const response = await facultyApi.getFacultyById(article.faculty); // Replace with actual ID
+          if (response && response.data) {
+            console.log(response.data);
+            setFaculty(response.data);
+          } else {
+            console.error("Faculty response is invalid:", faculty);
+            setFaculty(null);
+          }
+        } catch (facultyError) {
+          console.error("Error fetching faculty:", facultyError);
+          setFaculty(null);
+        }
+
         // Fetch articles with the same category for related articles
         try {
           if (articleData && articleData.category) {
@@ -71,7 +86,7 @@ const ArticlePage = () => {
             if (Array.isArray(allArticles)) {
               const related = allArticles
                 .filter((art) => art._id !== articleId)
-                .slice(0, 2);
+                .slice(0, 3);
               setRelatedArticles(related);
             } else {
               console.error(
@@ -148,10 +163,7 @@ const ArticlePage = () => {
               {article.category || "Uncategorized"}
             </Link>
           </span>
-          <span className="mr-4">
-            Faculty:{" "}
-            {article.faculty?.title || article.faculty?.name || "Unknown"}
-          </span>
+          <span className="mr-4">Faculty: {faculty?.title || "Unknown"}</span>
           <span>Department: {article.department?.title || "Unknown"}</span>
         </div>
 
@@ -162,6 +174,7 @@ const ArticlePage = () => {
             width={1200}
             height={500}
             className="w-full h-64 object-cover rounded-xl mb-8"
+            priority
           />
         )}
 

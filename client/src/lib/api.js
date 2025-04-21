@@ -353,6 +353,10 @@ export const facultyApi = {
   getFacultyByCode: async (code) => {
     return apiClient.get(`/faculty/${code}`);
   },
+
+  getFacultyById: async (id) => {
+    return apiClient.get(`/faculty/id/${id}`);
+  },
 };
 
 // New Department API
