@@ -27,18 +27,52 @@ const ArticlePage = () => {
         setArticle(articleData);
 
         // Record a view for this article
-        await articleViewsApi.recordView(articleId);
+        try {
+          await articleViewsApi.recordView(articleId);
+        } catch (viewError) {
+          console.error("Error recording view:", viewError);
+        }
 
         // Fetch popular articles
-        const popular = await articleViewsApi.getPopularArticles(2);
-        setPopularArticles(popular);
+        try {
+          const popular = await articleViewsApi.getPopularArticles(2);
+          if (Array.isArray(popular)) {
+            setPopularArticles(popular);
+          } else {
+            console.error(
+              "Popular articles response is not an array:",
+              popular
+            );
+            setPopularArticles([]);
+          }
+        } catch (popularError) {
+          console.error("Error fetching popular articles:", popularError);
+          setPopularArticles([]);
+        }
 
         // Fetch articles with the same category for related articles
-        const allArticles = await articlesApi.getArticles(articleData.category);
-        const related = allArticles
-          .filter((art) => art._id !== articleId)
-          .slice(0, 2);
-        setRelatedArticles(related);
+        try {
+          if (articleData && articleData.category) {
+            const allArticles = await articlesApi.getArticles({
+              category: articleData.category,
+            });
+            if (Array.isArray(allArticles)) {
+              const related = allArticles
+                .filter((art) => art._id !== articleId)
+                .slice(0, 2);
+              setRelatedArticles(related);
+            } else {
+              console.error(
+                "Related articles response is not an array:",
+                allArticles
+              );
+              setRelatedArticles([]);
+            }
+          }
+        } catch (relatedError) {
+          console.error("Error fetching related articles:", relatedError);
+          setRelatedArticles([]);
+        }
       } catch (err) {
         console.error("Error fetching article data:", err);
         setError(
@@ -68,10 +102,10 @@ const ArticlePage = () => {
           <span className="mr-4">
             Category:{" "}
             <Link
-              href={`/${article.category.toLowerCase()}`}
+              href={`/${article.category ? article.category.toLowerCase() : ""}`}
               className="font-bold hover:text-fuchsia-400"
             >
-              {article.category}
+              {article.category || "Uncategorized"}
             </Link>
           </span>
           <span className="mr-4">
@@ -95,7 +129,9 @@ const ArticlePage = () => {
             <article className="prose max-w-none">
               <div
                 dangerouslySetInnerHTML={{
-                  __html: article.content.replace(/\n/g, "<br/>"),
+                  __html: article.content
+                    ? article.content.replace(/\n/g, "<br/>")
+                    : "",
                 }}
               ></div>
             </article>

@@ -1,4 +1,4 @@
-export const generateMetadata = async ({ params }) => {
+export async function generateMetadata({ params }) {
   const { id } = params;
 
   try {
@@ -25,7 +25,7 @@ export const generateMetadata = async ({ params }) => {
       description: "Article details",
     };
   }
-};
+}
 
 export default function RootLayout({ children }) {
   return <>{children}</>;
