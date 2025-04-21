@@ -254,6 +254,13 @@ export const authApi = {
       },
     });
   },
+  
+  getResearcherDashboard: async (researcherId) => {
+    return requestWithAuth({
+      method: "get",
+      url: `/admin/researchers/${researcherId}/dashboard`
+    });
+  },
 };
 
 // Updated Articles API

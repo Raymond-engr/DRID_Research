@@ -29,8 +29,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getImageUrl } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 function ResearchersPage() {
+  const router = useRouter();
+  
   const [researchers, setResearchers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -207,15 +210,13 @@ function ResearchersPage() {
                       </Button>
 
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          window.open(`/researchers/${researcher.id}`, "_blank")
-                        }
-                      >
-                        <ExternalLink className="h-4 w-4 mr-1" />
-                        <span>View Profile</span>
-                      </Button>
+  variant="ghost"
+  size="sm"
+  onClick={() => router.push(`/researchers/${researcher._id}`)}
+>
+  <ExternalLink className="h-4 w-4 mr-1" />
+  <span>View Profile</span>
+</Button>
                     </div>
                   </CardContent>
                 </Card>
