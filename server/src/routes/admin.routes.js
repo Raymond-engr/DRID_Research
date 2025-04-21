@@ -16,6 +16,7 @@ router.post(
 );
 router.get('/researchers', adminController.getResearchers);
 router.delete('/researchers/:id', adminController.deleteResearcher);
+router.get('/researchers/:id/dashboard', adminController.getResearcherDashboard);
 
 // Invitations management
 router.get('/invitations', adminController.getInvitations);

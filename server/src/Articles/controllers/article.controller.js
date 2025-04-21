@@ -17,25 +17,60 @@ class ArticleController {
       const { q, category, faculty, department } = req.query;
       const query = {};
 
-      // Text search (using MongoDB text index)
-      if (q) {
-        query.$text = { $search: q };
+      // Text search (using MongoDB text index or regex fallback)
+      if (q && q.length >= 3) {
+        // Check if we're using MongoDB's text index
+        if (Article.schema.index && Article.schema.index('title', 'text') && Article.schema.index('content', 'text')) {
+          logger.info(`Using text index for search query: ${q}`);
+          query.$text = { $search: q };
+        } else {
+          // Fallback to regex search if text index isn't available
+          logger.info(`Using regex for search query: ${q}`);
+          query.$or = [
+            { title: { $regex: q, $options: 'i' } },
+            { content: { $regex: q, $options: 'i' } },
+            { summary: { $regex: q, $options: 'i' } }
+          ];
+        }
       }
 
+      // Category filter
       if (category) {
         query.category = category;
       }
 
-      // Faculty filter (ObjectId conversion)
+      // Faculty filter
       if (faculty) {
-        query.faculty = mongoose.Types.ObjectId.createFromHexString(faculty);
+        // First, try to find faculty by code
+        const facultyDoc = await Faculty.findOne({ code: faculty });
+        if (facultyDoc) {
+          query.faculty = facultyDoc._id;
+        } else if (mongoose.Types.ObjectId.isValid(faculty)) {
+          // If not found by code but ID is valid, use the ID directly
+          query.faculty = mongoose.Types.ObjectId.createFromHexString(faculty);
+        } else {
+          logger.warn(`Invalid faculty parameter: ${faculty}`);
+          return res.status(400).json({ message: 'Invalid faculty parameter' });
+        }
       }
 
+      // Department filter
       if (department) {
-        query.department =
-          mongoose.Types.ObjectId.createFromHexString(department);
+        // First, try to find department by code
+        const departmentDoc = await Department.findOne({ code: department });
+        if (departmentDoc) {
+          query.department = departmentDoc._id;
+        } else if (mongoose.Types.ObjectId.isValid(department)) {
+          // If not found by code but ID is valid, use the ID directly
+          query.department = mongoose.Types.ObjectId.createFromHexString(department);
+        } else {
+          logger.warn(`Invalid department parameter: ${department}`);
+          return res.status(400).json({ message: 'Invalid department parameter' });
+        }
       }
 
+      logger.info(`Executing article search with query: ${JSON.stringify(query)}`);
+      
       const articles = await Article.find(query)
         .populate('department', 'code title')
         .populate('contributors', 'name email')
@@ -43,9 +78,11 @@ class ArticleController {
         .populate('faculty', 'code title')
         .sort({ publish_date: -1 });
 
+      logger.info(`Found ${articles.length} articles matching search criteria`);
+      
       res.json(articles);
     } catch (err) {
-      logger.error(`Error retrieving articles: ${err.message}`);
+      logger.error(`Error retrieving articles: ${err.message}`, { stack: err.stack });
       res.status(500).send('Server Error');
     }
   };
