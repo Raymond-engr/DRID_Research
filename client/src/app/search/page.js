@@ -9,7 +9,7 @@ import Footer from "@/components/footer";
 import { articlesApi, facultyApi, departmentApi } from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 import { ArrowLeft, Filter, X } from "lucide-react";
-import { Button } from "@/components/ui/buttons";
+import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,7 +28,8 @@ const SearchPage = () => {
   const [faculties, setFaculties] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [selectedFaculty, setSelectedFaculty] = useState(initialFaculty);
-  const [selectedDepartment, setSelectedDepartment] = useState(initialDepartment);
+  const [selectedDepartment, setSelectedDepartment] =
+    useState(initialDepartment);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filteredDepartments, setFilteredDepartments] = useState([]);
@@ -42,32 +43,44 @@ const SearchPage = () => {
       try {
         const facultiesData = await facultyApi.getFaculties();
         const departmentsData = await departmentApi.getDepartments();
-        
-        if (facultiesData && Array.isArray(facultiesData)) {
-          setFaculties(facultiesData);
+
+        if (
+          facultiesData &&
+          facultiesData.data &&
+          Array.isArray(facultiesData.data)
+        ) {
+          setFaculties(facultiesData.data);
         }
-        
-        if (departmentsData && Array.isArray(departmentsData)) {
-          setDepartments(departmentsData);
-          setFilteredDepartments(departmentsData);
+
+        if (
+          departmentsData &&
+          departmentsData.data &&
+          Array.isArray(departmentsData.data)
+        ) {
+          setDepartments(departmentsData.data);
+          setFilteredDepartments(departmentsData.data);
         }
       } catch (error) {
         console.error("Error loading filters:", error);
       }
     };
-    
+
     loadFilters();
   }, []);
 
   // Filter departments based on selected faculty
   useEffect(() => {
     if (selectedFaculty && departments.length > 0) {
-      const filtered = departments.filter(dept => dept.faculty === selectedFaculty);
+      const filtered = departments.filter(
+        (dept) => dept.faculty === selectedFaculty
+      );
       setFilteredDepartments(filtered);
-      
+
       // If current selected department is not in the filtered list, reset it
       if (filtered.length > 0 && selectedDepartment) {
-        const deptExists = filtered.some(dept => dept.code === selectedDepartment);
+        const deptExists = filtered.some(
+          (dept) => dept.code === selectedDepartment
+        );
         if (!deptExists) {
           setSelectedDepartment("");
         }
@@ -79,7 +92,12 @@ const SearchPage = () => {
 
   // Search function
   const performSearch = async () => {
-    if (query.length < 3 && !selectedCategory && !selectedFaculty && !selectedDepartment) {
+    if (
+      query.length < 3 &&
+      !selectedCategory &&
+      !selectedFaculty &&
+      !selectedDepartment
+    ) {
       return;
     }
 
@@ -117,7 +135,7 @@ const SearchPage = () => {
     if (selectedCategory) params.set("category", selectedCategory);
     if (selectedFaculty) params.set("faculty", selectedFaculty);
     if (selectedDepartment) params.set("department", selectedDepartment);
-    
+
     router.push(`/search?${params.toString()}`, { scroll: false });
   };
 
@@ -138,7 +156,12 @@ const SearchPage = () => {
 
   // Perform search on initial load if there are search params
   useEffect(() => {
-    if (initialQuery || initialCategory || initialFaculty || initialDepartment) {
+    if (
+      initialQuery ||
+      initialCategory ||
+      initialFaculty ||
+      initialDepartment
+    ) {
       performSearch();
     }
   }, [initialQuery, initialCategory, initialFaculty, initialDepartment]);
@@ -150,14 +173,16 @@ const SearchPage = () => {
         <div className="max-w-7xl mx-auto">
           {/* Search Header */}
           <div className="flex items-center justify-between mb-6">
-            <button 
-              onClick={() => router.back()} 
+            <button
+              onClick={() => router.back()}
               className="flex items-center text-fuchsia-900 hover:text-fuchsia-700"
             >
               <ArrowLeft size={20} className="mr-2" />
               <span>Back</span>
             </button>
-            <h1 className="text-2xl font-bold text-fuchsia-900">Search Results</h1>
+            <h1 className="text-2xl font-bold text-fuchsia-900">
+              Search Results
+            </h1>
           </div>
 
           {/* Search Form */}
@@ -173,21 +198,32 @@ const SearchPage = () => {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => setIsFilterOpen(!isFilterOpen)}
                     className="flex items-center bg-gray-100"
                   >
                     <Filter size={16} className="mr-2" />
                     Filters
-                    {(selectedCategory || selectedFaculty || selectedDepartment) && 
+                    {(selectedCategory ||
+                      selectedFaculty ||
+                      selectedDepartment) && (
                       <span className="ml-2 inline-flex items-center justify-center w-5 h-5 bg-fuchsia-700 text-white rounded-full text-xs">
-                        {[selectedCategory, selectedFaculty, selectedDepartment].filter(Boolean).length}
+                        {
+                          [
+                            selectedCategory,
+                            selectedFaculty,
+                            selectedDepartment,
+                          ].filter(Boolean).length
+                        }
                       </span>
-                    }
+                    )}
                   </Button>
-                  <Button type="submit" className="bg-fuchsia-900 hover:bg-fuchsia-800">
+                  <Button
+                    type="submit"
+                    className="bg-fuchsia-900 hover:bg-fuchsia-800"
+                  >
                     Search
                   </Button>
                 </div>
@@ -197,21 +233,23 @@ const SearchPage = () => {
               {isFilterOpen && (
                 <div className="bg-gray-50 p-4 rounded-md border border-gray-200 mt-4">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-semibold text-fuchsia-900">Filter Results</h3>
+                    <h3 className="font-semibold text-fuchsia-900">
+                      Filter Results
+                    </h3>
                     <div className="flex gap-2">
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={clearFilters}
                         className="text-gray-600 hover:text-gray-800"
                       >
                         Clear Filters
                       </Button>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setIsFilterOpen(false)}
                         className="text-gray-600 hover:text-gray-800"
                       >
@@ -303,7 +341,8 @@ const SearchPage = () => {
               <>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-800">
-                    Found {results.length} {results.length === 1 ? "result" : "results"}
+                    Found {results.length}{" "}
+                    {results.length === 1 ? "result" : "results"}
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -339,9 +378,13 @@ const SearchPage = () => {
                           {article.summary}
                         </p>
                         <div className="flex justify-between items-center text-xs text-gray-500">
-                          <span>{article.department?.title || "Unknown department"}</span>
                           <span>
-                            {new Date(article.publish_date).toLocaleDateString()}
+                            {article.department?.title || "Unknown department"}
+                          </span>
+                          <span>
+                            {new Date(
+                              article.publish_date
+                            ).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
@@ -351,15 +394,21 @@ const SearchPage = () => {
               </>
             ) : (
               <div className="text-center py-20 bg-white rounded-lg shadow-md">
-                {(query || selectedCategory || selectedFaculty || selectedDepartment) ? (
+                {query ||
+                selectedCategory ||
+                selectedFaculty ||
+                selectedDepartment ? (
                   <>
                     <div className="text-fuchsia-900 text-5xl mb-4">🔍</div>
-                    <h3 className="text-xl font-medium text-gray-800 mb-2">No results found</h3>
+                    <h3 className="text-xl font-medium text-gray-800 mb-2">
+                      No results found
+                    </h3>
                     <p className="text-gray-600 mb-4">
-                      We couldn't find any articles matching your search criteria.
+                      We couldn&apos;t find any articles matching your search
+                      criteria.
                     </p>
-                    <Button 
-                      onClick={clearFilters} 
+                    <Button
+                      onClick={clearFilters}
                       className="bg-fuchsia-900 hover:bg-fuchsia-800"
                     >
                       Clear filters and try again
@@ -368,9 +417,12 @@ const SearchPage = () => {
                 ) : (
                   <>
                     <div className="text-fuchsia-900 text-5xl mb-4">🔎</div>
-                    <h3 className="text-xl font-medium text-gray-800 mb-2">Start searching</h3>
+                    <h3 className="text-xl font-medium text-gray-800 mb-2">
+                      Start searching
+                    </h3>
                     <p className="text-gray-600">
-                      Enter at least 3 characters or select filters to find articles.
+                      Enter at least 3 characters or select filters to find
+                      articles.
                     </p>
                   </>
                 )}
