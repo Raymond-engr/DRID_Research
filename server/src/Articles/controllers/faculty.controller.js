@@ -1,5 +1,6 @@
 import Faculty from '../models/faculty.model.js';
 import logger from '../../utils/logger.js';
+import mongoose from 'mongoose';
 
 class FacultyController {
   getFaculties = async (req, res) => {
