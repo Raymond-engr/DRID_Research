@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import User from '../model/user.model.js';
 import emailService from '../services/email.service.js';
 import { BadRequestError, NotFoundError } from '../utils/customErrors.js';
+import Article from '../Articles/models/article.model.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import logger from '../utils/logger.js';
 import generateSecurePassword from '../utils/passwordGenerator.js';
@@ -238,112 +239,112 @@ class AdminController {
     });
   });
 
-// Get researcher dashboard data for admin
-getResearcherDashboard = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  
-  if (!id) {
-    throw new BadRequestError('Researcher ID is required');
-  }
+  // Get researcher dashboard data for admin
+  getResearcherDashboard = asyncHandler(async (req, res) => {
+    const { id } = req.params;
 
-  logger.info(`Admin requesting dashboard for researcher ID: ${id}`);
+    if (!id) {
+      throw new BadRequestError('Researcher ID is required');
+    }
 
-  // Verify the researcher exists
-  const researcher = await User.findById(id);
-  if (!researcher || researcher.role !== 'researcher') {
-    logger.warn(`Researcher not found with ID: ${id}`);
-    throw new NotFoundError('Researcher not found');
-  }
+    logger.info(`Admin requesting dashboard for researcher ID: ${id}`);
 
-  // Get researcher's articles
-  const articles = await Article.find({
-    $or: [{ owner: id }, { contributors: id }],
-  })
-    .populate('department', 'code title')
-    .populate('contributors', 'name email')
-    .sort({ publish_date: -1 });
+    // Verify the researcher exists
+    const researcher = await User.findById(id);
+    if (!researcher || researcher.role !== 'researcher') {
+      logger.warn(`Researcher not found with ID: ${id}`);
+      throw new NotFoundError('Researcher not found');
+    }
 
-  // Get list of collaborators
-  const collaboratorIds = new Set();
+    // Get researcher's articles
+    const articles = await Article.find({
+      $or: [{ owner: id }, { contributors: id }],
+    })
+      .populate('department', 'code title')
+      .populate('contributors', 'name email')
+      .sort({ publish_date: -1 });
 
-  articles.forEach((article) => {
-    // Add contributors
-    article.contributors.forEach((contributor) => {
-      if (contributor._id.toString() !== id) {
-        collaboratorIds.add(contributor._id.toString());
+    // Get list of collaborators
+    const collaboratorIds = new Set();
+
+    articles.forEach((article) => {
+      // Add contributors
+      article.contributors.forEach((contributor) => {
+        if (contributor._id.toString() !== id) {
+          collaboratorIds.add(contributor._id.toString());
+        }
+      });
+
+      // Add owner if not the researcher
+      if (article.owner && article.owner.toString() !== id) {
+        collaboratorIds.add(article.owner.toString());
       }
     });
 
-    // Add owner if not the researcher
-    if (article.owner && article.owner.toString() !== id) {
-      collaboratorIds.add(article.owner.toString());
-    }
-  });
+    // Get collaborator details
+    const collaborators = await User.find({
+      _id: { $in: Array.from(collaboratorIds) },
+    }).select('name email title profilePicture');
 
-  // Get collaborator details
-  const collaborators = await User.find({
-    _id: { $in: Array.from(collaboratorIds) },
-  }).select('name email title profilePicture');
+    // Get popular articles
+    const popularArticles = articles
+      .sort((a, b) => (b.views?.count || 0) - (a.views?.count || 0))
+      .slice(0, 5);
 
-  // Get popular articles
-  const popularArticles = articles
-    .sort((a, b) => (b.views?.count || 0) - (a.views?.count || 0))
-    .slice(0, 5);
-
-  // Calculate category distribution
-  const categoriesMap = {};
-  articles.forEach(article => {
-    if (!categoriesMap[article.category]) {
-      categoriesMap[article.category] = { _id: article.category, count: 0 };
-    }
-    categoriesMap[article.category].count += 1;
-  });
-  const categoriesDistribution = Object.values(categoriesMap);
-
-  // Calculate total views
-  const totalViews = articles.reduce(
-    (sum, article) => sum + (article.views?.count || 0),
-    0
-  );
-
-  logger.info(`Successfully retrieved dashboard data for researcher ${id}`);
-
-  res.status(200).json({
-    success: true,
-    data: {
-      profile: {
-        _id: researcher._id,
-        name: researcher.name,
-        email: researcher.email,
-        title: researcher.title,
-        faculty: researcher.faculty,
-        profilePicture: researcher.profilePicture
-      },
-      articles: articles,
-      collaborators: collaborators,
-      stats: {
-        total_articles: articles.length,
-        sole_author: articles.filter(
-          (a) =>
-            a.owner.toString() === id &&
-            (!a.contributors || a.contributors.length === 0)
-        ).length,
-        collaborations: articles.filter(
-          (a) =>
-            (a.owner.toString() === id &&
-              a.contributors &&
-              a.contributors.length > 0) ||
-            a.owner.toString() !== id
-        ).length,
-      },
-      analytics: {
-        totalArticles: articles.length,
-        totalViews: totalViews,
-        categoriesDistribution: categoriesDistribution
+    // Calculate category distribution
+    const categoriesMap = {};
+    articles.forEach((article) => {
+      if (!categoriesMap[article.category]) {
+        categoriesMap[article.category] = { _id: article.category, count: 0 };
       }
-    },
+      categoriesMap[article.category].count += 1;
+    });
+    const categoriesDistribution = Object.values(categoriesMap);
+
+    // Calculate total views
+    const totalViews = articles.reduce(
+      (sum, article) => sum + (article.views?.count || 0),
+      0
+    );
+
+    logger.info(`Successfully retrieved dashboard data for researcher ${id}`);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        profile: {
+          _id: researcher._id,
+          name: researcher.name,
+          email: researcher.email,
+          title: researcher.title,
+          faculty: researcher.faculty,
+          profilePicture: researcher.profilePicture,
+        },
+        articles: articles,
+        collaborators: collaborators,
+        stats: {
+          total_articles: articles.length,
+          sole_author: articles.filter(
+            (a) =>
+              a.owner.toString() === id &&
+              (!a.contributors || a.contributors.length === 0)
+          ).length,
+          collaborations: articles.filter(
+            (a) =>
+              (a.owner.toString() === id &&
+                a.contributors &&
+                a.contributors.length > 0) ||
+              a.owner.toString() !== id
+          ).length,
+        },
+        analytics: {
+          totalArticles: articles.length,
+          totalViews: totalViews,
+          categoriesDistribution: categoriesDistribution,
+        },
+      },
+    });
   });
-});
 }
 
 export default new AdminController();
