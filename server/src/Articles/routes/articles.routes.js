@@ -5,7 +5,6 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import logger from '../../utils/logger.js';
 
 const router = express.Router();
 

@@ -6,18 +6,41 @@ import mongoose from 'mongoose';
 import Article from '../models/article.model.js';
 import User from '../../model/user.model.js';
 import logger from '../../utils/logger.js';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 class ArticleController {
   getArticles = async (req, res) => {
     try {
-      const query = req.query.q
-        ? { title: { $regex: req.query.q, $options: 'i' } }
-        : {};
+      const { q, category, faculty, department } = req.query;
+      const query = {};
+
+      // Text search (using MongoDB text index)
+      if (q) {
+        query.$text = { $search: q };
+      }
+
+      if (category) {
+        query.category = category;
+      }
+
+      // Faculty filter (ObjectId conversion)
+      if (faculty) {
+        query.faculty = mongoose.Types.ObjectId.createFromHexString(faculty);
+      }
+
+      if (department) {
+        query.department =
+          mongoose.Types.ObjectId.createFromHexString(department);
+      }
 
       const articles = await Article.find(query)
         .populate('department', 'code title')
         .populate('contributors', 'name email')
         .populate('owner', 'username email')
+        .populate('faculty', 'name')
         .sort({ publish_date: -1 });
 
       res.json(articles);

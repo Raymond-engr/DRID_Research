@@ -16,7 +16,7 @@ const ArticleSchema = new mongoose.Schema(
     content: {
       type: String,
       required: true,
-      maxlength: 10000, // Increased from 500 to 50000 to accommodate research article content
+      maxlength: 10000,
     },
     cover_photo: {
       type: String,
