@@ -28,6 +28,28 @@ class FacultyController {
       res.status(500).send('Server Error');
     }
   };
+
+  getFacultyById = async (req, res) => {
+    try {
+      // Validate if the ID is a valid MongoDB ObjectId
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        logger.warn(`Invalid faculty ID format: ${req.params.id}`);
+        return res.status(400).json({ msg: 'Invalid faculty ID format' });
+      }
+
+      const faculty = await Faculty.findById(req.params.id);
+
+      if (!faculty) {
+        logger.warn(`Faculty not found with ID: ${req.params.id}`);
+        return res.status(404).json({ msg: 'Faculty not found' });
+      }
+
+      res.json(faculty);
+    } catch (err) {
+      logger.error(`Error retrieving faculty by ID: ${err.message}`);
+      res.status(500).send('Server Error');
+    }
+  };
 }
 
 export default new FacultyController();

@@ -40,7 +40,7 @@ class ArticleController {
         .populate('department', 'code title')
         .populate('contributors', 'name email')
         .populate('owner', 'username email')
-        .populate('faculty', 'name')
+        .populate('faculty', 'code title')
         .sort({ publish_date: -1 });
 
       res.json(articles);
