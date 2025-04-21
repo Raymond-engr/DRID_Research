@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Header from "@/components/header";
@@ -12,6 +12,7 @@ import { getImageUrl } from "@/lib/utils";
 const ArticlePage = () => {
   const params = useParams();
   const articleId = params?.id;
+  const router = useRouter();
 
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,10 +21,20 @@ const ArticlePage = () => {
   const [relatedArticles, setRelatedArticles] = useState([]);
 
   useEffect(() => {
-    if (!articleId) return;
+    if (!articleId) {
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const articleData = await articlesApi.getArticle(articleId);
+        if (!articleData) {
+          setError("Article not found");
+          setLoading(false);
+          return;
+        }
+
         setArticle(articleData);
 
         // Record a view for this article
@@ -31,6 +42,7 @@ const ArticlePage = () => {
           await articleViewsApi.recordView(articleId);
         } catch (viewError) {
           console.error("Error recording view:", viewError);
+          // Don't fail the whole page if view recording fails
         }
 
         // Fetch popular articles
@@ -86,10 +98,38 @@ const ArticlePage = () => {
     fetchData();
   }, [articleId]);
 
-  if (!articleId) return <div className="p-8">Loading route...</div>;
-  if (loading) return <div className="p-8">Loading...</div>;
-  if (error) return <div className="p-8 text-red-500">{error}</div>;
-  if (!article) return <div className="p-8">Article not found</div>;
+  if (!articleId) return <div className="p-8">Invalid article ID</div>;
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="flex justify-center items-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500"></div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error || !article) {
+    return (
+      <>
+        <Header />
+        <div className="p-8 max-w-4xl mx-auto">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            {error || "Article not found"}
+          </div>
+          <button
+            onClick={() => router.back()}
+            className="px-4 py-2 bg-fuchsia-900 text-white rounded hover:bg-fuchsia-800 transition flex items-center gap-2"
+          >
+            <span>← Back</span>
+          </button>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -109,7 +149,8 @@ const ArticlePage = () => {
             </Link>
           </span>
           <span className="mr-4">
-            Faculty: {article.faculty?.title || "Unknown"}
+            Faculty:{" "}
+            {article.faculty?.title || article.faculty?.name || "Unknown"}
           </span>
           <span>Department: {article.department?.title || "Unknown"}</span>
         </div>

@@ -1,3 +1,4 @@
+// Fixed articles/[id]/layout.js
 export async function generateMetadata({ params }) {
   const { id } = params;
 
