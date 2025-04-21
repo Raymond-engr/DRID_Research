@@ -63,18 +63,21 @@ const ArticlePage = () => {
           setPopularArticles([]);
         }
 
-        try {
-          const response = await facultyApi.getFacultyById(article.faculty); // Replace with actual ID
-          if (response && response.data) {
-            console.log(response.data);
-            setFaculty(response.data);
-          } else {
-            console.error("Faculty response is invalid:", faculty);
+        if (articleData.faculty) {
+          try {
+            const response = await facultyApi.getFacultyById(
+              articleData.faculty
+            );
+            if (response && response.data) {
+              setFaculty(response.data);
+            } else {
+              console.error("Faculty response is invalid:", response);
+              setFaculty(null);
+            }
+          } catch (facultyError) {
+            console.error("Error fetching faculty:", facultyError);
             setFaculty(null);
           }
-        } catch (facultyError) {
-          console.error("Error fetching faculty:", facultyError);
-          setFaculty(null);
         }
 
         // Fetch articles with the same category for related articles
