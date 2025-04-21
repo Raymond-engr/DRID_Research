@@ -259,11 +259,11 @@ export const authApi = {
 // Updated Articles API
 export const articlesApi = {
   // Get all articles with optional category filter
-  getArticles: async (category) => {
+  getArticles: async (filters = {}) => {
     return requestWithAuth({
       method: "get",
       url: "/articles",
-      params: category ? { category } : {},
+      params: filters,
     });
   },
 

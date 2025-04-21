@@ -1,140 +1,187 @@
-'use client';
+"use client";
 
-import { useParams } from 'next/navigation';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import Header from '@/components/header';
-import Footer from '@/components/footer';
-import Link from 'next/link';
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
+import Link from "next/link";
+import { articlesApi, articleViewsApi } from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 
 const ArticlePage = () => {
   const params = useParams();
   const articleId = params?.id;
 
   const [article, setArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [popularArticles, setPopularArticles] = useState([]);
+  const [relatedArticles, setRelatedArticles] = useState([]);
 
   useEffect(() => {
-    // Simulate fetching article by ID
-    const fetchedArticle = {
-      id: articleId,
-      title: 'Innovating for Local Impact',
-      category: 'development',
-      faculty: 'Faculty of Engineering',
-      department: 'Mechanical Engineering',
-      contributors: ['Dr. Jane Doe', 'Prof. John Smith'],
-      coverPhoto: '/images/sample-cover.jpg',
-      body: `At the University of Benin, research is deeply linked with action. This article explores...`,
-      topArticles: [
-        {
-          id: 'top1',
-          title: 'Harnessing AI for Sustainable Agriculture',
-          image: '/images/agriculture.jpg',
-        },
-        {
-          id: 'top2',
-          title: 'Water Purification Innovation Wins Award',
-          image: '/images/water.jpg',
-        },
-      ],
-      relatedArticles: [
-        {
-          id: 'rel1',
-          title: 'Clean Energy Startups from UNIBEN',
-          image: '/energy.jpg',
-          description : "Description",
-          category : "development"
-        },
-        {
-          id: 'rel2',
-          title: 'UNIBEN Leads Climate Resilience Research',
-          image: '/climate.jpg',
-          description : "Description",
-          category : "development"
-        },
-      ],
+    if (!articleId) return;
+    const fetchData = async () => {
+      try {
+        const articleData = await articlesApi.getArticle(articleId);
+        setArticle(articleData);
+
+        // Record a view for this article
+        await articleViewsApi.recordView(articleId);
+
+        // Fetch popular articles
+        const popular = await articleViewsApi.getPopularArticles(2);
+        setPopularArticles(popular);
+
+        // Fetch articles with the same category for related articles
+        const allArticles = await articlesApi.getArticles(articleData.category);
+        const related = allArticles
+          .filter((art) => art._id !== articleId)
+          .slice(0, 2);
+        setRelatedArticles(related);
+      } catch (err) {
+        console.error("Error fetching article data:", err);
+        setError(
+          "Failed to load article. It may have been removed or you don't have permission to view it."
+        );
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setArticle(fetchedArticle);
+    fetchData();
   }, [articleId]);
 
-  if (!article) return <div className="p-8">Loading...</div>;
+  if (!articleId) return <div className="p-8">Loading route...</div>;
+  if (loading) return <div className="p-8">Loading...</div>;
+  if (error) return <div className="p-8 text-red-500">{error}</div>;
+  if (!article) return <div className="p-8">Article not found</div>;
 
   return (
     <>
-    <Header />
-    <div className="py-16 px-4 md:px-20">
-      <h1 className="text-3xl font-bold text-fuchsia-900 mb-4">{article.title}</h1>
-      <div className="text-sm text-gray-600 mb-6">
-        <span className="mr-4">Category: <Link href={`/${article.category}`} className='font-bold hover:text-fuchsia-400'>{article.category}</Link></span>
-        <span className="mr-4">Faculty: {article.faculty}</span>
-        <span>Department: {article.department}</span>
-      </div>
-
-      <Image
-        src={article.coverPhoto}
-        alt="Cover Photo"
-        width={1200}
-        height={500}
-        className="w-full h-64 object-cover rounded-xl mb-8"
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <article className="prose max-w-none">
-            <p>{article.body}</p>
-          </article>
-            <div className="mt-12 text-sm text-gray-700">
-                <strong>Contributors:</strong> {article.contributors.join(', ')}
-            </div>
-
-          <div className="mt-12">
-            <h2 className="text-2xl font-semibold text-fuchsia-900 mb-4">Related Articles</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {article.relatedArticles.map((rel) => (
-                <Link href={"/articles/" + rel.id} key={rel.id} className="bg-white shadow rounded-lg overflow-hidden block relative">
-                  <div className="absolute top-2 left-2 bg-fuchsia-900 text-white text-xs font-bold px-2 py-1 rounded uppercase z-10">
-                    {rel.category}
-                  </div>
-                  <Image
-                    src={rel.image}
-                    alt={rel.title}
-                    width={400}
-                    height={200}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-fuchsia-900">{rel.title}</h3>
-                    <p className='text-xs text-gray-600'>{rel.description}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
+      <Header />
+      <div className="py-16 px-4 md:px-20">
+        <h1 className="text-3xl font-bold text-fuchsia-900 mb-4">
+          {article.title}
+        </h1>
+        <div className="text-sm text-gray-600 mb-6">
+          <span className="mr-4">
+            Category:{" "}
+            <Link
+              href={`/${article.category.toLowerCase()}`}
+              className="font-bold hover:text-fuchsia-400"
+            >
+              {article.category}
+            </Link>
+          </span>
+          <span className="mr-4">
+            Faculty: {article.faculty?.title || "Unknown"}
+          </span>
+          <span>Department: {article.department?.title || "Unknown"}</span>
         </div>
 
-        <div className="lg:col-span-1">
-          <h2 className="text-xl font-semibold text-fuchsia-900 mb-4">Top Articles</h2>
-          <div className="space-y-6">
-            {article.topArticles.map((top) => (
-              <Link href={"/articles/" + top.id} key={top.id} className="bg-white shadow rounded-lg overflow-hidden block">
-                <Image
-                  src={top.image}
-                  alt={top.title}
-                  width={400}
-                  height={200}
-                  className="w-full h-32 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="text-md font-medium text-fuchsia-900">{top.title}</h3>
+        {article.cover_photo && (
+          <Image
+            src={getImageUrl(article.cover_photo)}
+            alt="Cover Photo"
+            width={1200}
+            height={500}
+            className="w-full h-64 object-cover rounded-xl mb-8"
+          />
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <article className="prose max-w-none">
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: article.content.replace(/\n/g, "<br/>"),
+                }}
+              ></div>
+            </article>
+
+            {article.contributors && article.contributors.length > 0 && (
+              <div className="mt-12 text-sm text-gray-700">
+                <strong>Contributors:</strong>{" "}
+                {article.contributors
+                  .map((c) => c.name || c.username)
+                  .join(", ")}
+              </div>
+            )}
+
+            {relatedArticles.length > 0 && (
+              <div className="mt-12">
+                <h2 className="text-2xl font-semibold text-fuchsia-900 mb-4">
+                  Related Articles
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {relatedArticles.map((rel) => (
+                    <Link
+                      href={`/articles/${rel._id}`}
+                      key={rel._id}
+                      className="bg-white shadow rounded-lg overflow-hidden block relative"
+                    >
+                      <div className="absolute top-2 left-2 bg-fuchsia-900 text-white text-xs font-bold px-2 py-1 rounded uppercase z-10">
+                        {rel.category}
+                      </div>
+                      {rel.cover_photo && (
+                        <Image
+                          src={getImageUrl(rel.cover_photo)}
+                          alt={rel.title}
+                          width={400}
+                          height={200}
+                          className="w-full h-48 object-cover"
+                        />
+                      )}
+                      <div className="p-4">
+                        <h3 className="text-lg font-semibold text-fuchsia-900">
+                          {rel.title}
+                        </h3>
+                        <p className="text-xs text-gray-600">{rel.summary}</p>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              </Link>
-            ))}
+              </div>
+            )}
+          </div>
+
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-semibold text-fuchsia-900 mb-4">
+              Top Articles
+            </h2>
+            {popularArticles.length > 0 ? (
+              <div className="space-y-6">
+                {popularArticles.map((top) => (
+                  <Link
+                    href={`/articles/${top._id}`}
+                    key={top._id}
+                    className="bg-white shadow rounded-lg overflow-hidden block"
+                  >
+                    {top.cover_photo && (
+                      <Image
+                        src={getImageUrl(top.cover_photo)}
+                        alt={top.title}
+                        width={400}
+                        height={200}
+                        className="w-full h-32 object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      <h3 className="text-md font-medium text-fuchsia-900">
+                        {top.title}
+                      </h3>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">No popular articles found.</p>
+            )}
           </div>
         </div>
       </div>
-
-    </div>
-    <Footer />
+      <Footer />
     </>
   );
 };
