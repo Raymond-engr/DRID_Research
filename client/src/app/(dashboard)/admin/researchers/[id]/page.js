@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -20,8 +20,9 @@ import { getImageUrl } from "@/lib/utils";
 import Link from "next/link";
 import { withAdminAuth } from "@/lib/auth";
 
-function AdminResearcherDashboard({ params }) {
-  const researcherId = params.id;
+function AdminResearcherDashboard() {
+  const params = useParams();
+  const researcherId = String(params.id) || params.id;
   const router = useRouter();
   const [dashboardData, setDashboardData] = useState({
     profile: null,
@@ -35,8 +36,8 @@ function AdminResearcherDashboard({ params }) {
     analytics: {
       totalArticles: 0,
       totalViews: 0,
-      categoriesDistribution: []
-    }
+      categoriesDistribution: [],
+    },
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -49,14 +50,19 @@ function AdminResearcherDashboard({ params }) {
 
         // Fetch researcher dashboard data
         const response = await authApi.getResearcherDashboard(researcherId);
+        console.log("API Response:", response);
 
         // Set state with fetched data
-        if (response?.data?.data) {
-          setDashboardData(response.data.data);
+        if (response?.data) {
+          setDashboardData(response.data);
+          console.log("Fetched researcher dashboard:", response.data);
+          console.log("Dashboard data updated:", dashboardData);
         }
       } catch (error) {
         console.error("Error fetching researcher dashboard:", error);
-        setError("Failed to load researcher dashboard. Please try again later.");
+        setError(
+          "Failed to load researcher dashboard. Please try again later."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -65,6 +71,7 @@ function AdminResearcherDashboard({ params }) {
     if (researcherId) {
       fetchResearcherDashboard();
     }
+    console.log("Dashboard data updated:", dashboardData);
   }, [researcherId]);
 
   // Display loading state
@@ -102,20 +109,21 @@ function AdminResearcherDashboard({ params }) {
   }
 
   const { profile, articles, collaborators, stats, analytics } = dashboardData;
+  console.log("Dashboard data:", dashboardData);
 
   return (
     <div className="space-y-6 p-4 md:p-8">
       <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => router.back()}
           className="mb-2"
         >
           <ChevronLeft className="h-4 w-4 mr-1" /> Back
         </Button>
         <h1 className="text-2xl font-bold tracking-tight">
-          {profile?.name}'s Dashboard
+          {profile?.name}&apos;s Dashboard
         </h1>
       </div>
 
@@ -222,9 +230,7 @@ function AdminResearcherDashboard({ params }) {
         ) : (
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-gray-500">
-                No published articles found.
-              </p>
+              <p className="text-gray-500">No published articles found.</p>
             </CardContent>
           </Card>
         )}
@@ -339,7 +345,7 @@ function AdminResearcherDashboard({ params }) {
       )}
 
       {/* Category Distribution */}
-      {analytics.categoriesDistribution && 
+      {analytics.categoriesDistribution &&
         analytics.categoriesDistribution.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Research Categories</h2>

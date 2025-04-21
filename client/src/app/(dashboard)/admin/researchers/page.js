@@ -33,7 +33,7 @@ import { useRouter } from "next/navigation";
 
 function ResearchersPage() {
   const router = useRouter();
-  
+
   const [researchers, setResearchers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -159,7 +159,7 @@ function ResearchersPage() {
           ) : (
             <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredResearchers.map((researcher) => (
-                <Card key={researcher.id} className="overflow-hidden">
+                <Card key={researcher._id} className="overflow-hidden">
                   <div className="flex items-center justify-center bg-gray-100 h-40">
                     {researcher.profilePicture ? (
                       <div className="relative h-40 w-full">
@@ -210,13 +210,15 @@ function ResearchersPage() {
                       </Button>
 
                       <Button
-  variant="ghost"
-  size="sm"
-  onClick={() => router.push(`/researchers/${researcher._id}`)}
->
-  <ExternalLink className="h-4 w-4 mr-1" />
-  <span>View Profile</span>
-</Button>
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          router.push(`/admin/researchers/${researcher._id}`)
+                        }
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        <span>View Profile</span>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { Input } from "./ui/input";
 import { Search, Menu, X } from "lucide-react";
 import {
@@ -10,8 +11,42 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const Header = () => {
+const Header = ({ isSearchPage = false }) => {
+  const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+
+  // Reset search expansion when navigating to search page
+  useEffect(() => {
+    if (isSearchPage) {
+      setIsSearchExpanded(false);
+    }
+  }, [isSearchPage]);
+
+  const handleSearchFocus = () => {
+    if (!isSearchPage) {
+      setIsSearchExpanded(true);
+    }
+  };
+
+  const handleSearchBlur = (e) => {
+    // Only collapse if clicking outside and not related to search
+    if (!e.relatedTarget || !e.relatedTarget.closest(".search-container")) {
+      setIsSearchExpanded(false);
+    }
+  };
+
+  const handleSubmitSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim().length >= 3 || isSearchPage) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      if (!isSearchPage) {
+        setIsSearchExpanded(false);
+      }
+    }
+  };
 
   return (
     <>
@@ -26,15 +61,29 @@ const Header = () => {
           />
         </Link>
         <div className="py-3 w-2/4 hidden md:block">
-          <form className="w-full flex justify-end">
-            <Input
-              id="search-input"
-              className="rounded-4xl focus:w-full w-52 transition-all text-gray-900"
-              placeholder="Search..."
-            />
-            <label htmlFor="search-input" className="-ml-10 mt-1 text-sm">
-              <Search className="text-gray-800 text-xs" />
-            </label>
+          <form
+            onSubmit={handleSubmitSearch}
+            className="w-full flex justify-end search-container"
+          >
+            <div
+              className={`relative ${isSearchExpanded ? "w-full" : "w-52"} transition-all duration-300`}
+            >
+              <Input
+                id="search-input"
+                className={`rounded-4xl focus:w-full transition-all text-gray-900 ${isSearchExpanded ? "w-full" : "w-52"}`}
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={handleSearchFocus}
+                onBlur={handleSearchBlur}
+              />
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-800 hover:text-fuchsia-900"
+              >
+                <Search className="text-xs" />
+              </button>
+            </div>
           </form>
         </div>
         {/* Hamburger Menu Button */}
@@ -140,18 +189,25 @@ const Header = () => {
       {isMenuOpen && (
         <div className="w-full px-5 bg-default py-3 flex flex-col space-y-4 text-white md:hidden capitalize">
           {/* Search Field */}
-          <form className="w-full flex justify-center mb-4">
-            <Input
-              id="mobile-search-input"
-              className="rounded-4xl w-full text-white"
-              placeholder="Search..."
-            />
-            <label
-              htmlFor="mobile-search-input"
-              className="-ml-10 mt-1 text-sm"
-            >
-              <Search className="text-gray-800 text-xs" />
-            </label>
+          <form
+            onSubmit={handleSubmitSearch}
+            className="w-full flex justify-center mb-4"
+          >
+            <div className="relative w-full">
+              <Input
+                id="mobile-search-input"
+                className="w-full text-gray-900 pr-10"
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-800"
+              >
+                <Search className="text-xs" />
+              </button>
+            </div>
           </form>
           {/* Navigation Links */}
           <Link href="/" className="hover:text-gray-400">
@@ -173,6 +229,14 @@ const Header = () => {
             PARTNERSHIPS
           </Link>
         </div>
+      )}
+
+      {/* Expanded Search Overlay (for desktop) */}
+      {isSearchExpanded && !isSearchPage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:block"
+          onClick={() => setIsSearchExpanded(false)}
+        />
       )}
     </>
   );
