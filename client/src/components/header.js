@@ -230,14 +230,6 @@ const Header = ({ isSearchPage = false }) => {
           </Link>
         </div>
       )}
-
-      {/* Expanded Search Overlay (for desktop) */}
-      {isSearchExpanded && !isSearchPage && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:block"
-          onClick={() => setIsSearchExpanded(false)}
-        />
-      )}
     </>
   );
 };

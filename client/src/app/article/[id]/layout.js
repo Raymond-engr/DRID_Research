@@ -4,9 +4,11 @@ export async function generateMetadata({ params }) {
 
   try {
     // Fetch description and title and create OG links from the article data
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1"}/articles/${id}`
-    );
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+    const url = `${baseUrl}/articles/${id}`;
+
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Article not found");
     const article = await response.json();
 
